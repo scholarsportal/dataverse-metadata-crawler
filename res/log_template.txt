@@ -1,0 +1,27 @@
+--- Summary ---
+Repository base URL: {{ config.BASE_URL }}
+Collection Name: {{ config.COLLECTION_NAME }}
+Collection Alias: {{ config.COLLECTION_ALIAS }}
+Collection ID: {{ config.COLLECTION_ID }}
+Dataset Version: {{ config.VERSION }}
+
+Start time: {{ start_time_display }}
+End time: {{ end_time_display }}
+Execution time: {{ elapsed_time }}
+
+Total number of dataset crawled from the collection: {{ meta_dict }}
+Number of dataverses (at all levels/depths) crawled from the collection: {{ collections_tree_flatten }}
+Number of datasets failed to be crawled: {{ failed_metadata_ids }}
+
+Total number of files in the collection: {{ file_num }}
+Total size of files in the collection: {{ file_size }} bytes
+
+{% if json_file_checksum_dict %}
+Files saved:
+{% for item in json_file_checksum_dict %} 
+Item type: {{ item.type }}
+Item path: {{ item.path }}
+Item checksum (SHA-256): {{ item.checksum }}
+{% endfor %}
+{% endif %}
+--- End of Log ---
