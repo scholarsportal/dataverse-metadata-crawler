@@ -1,0 +1,73 @@
+name: Poetry export requirements.txt
+on:
+  push:
+    branches:
+      - '*'  # Trigger on any push to any branch
+    paths:
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+jobs:
+  poetry-export_dependencies:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v4
+        with:
+          poetry-version: 'latest'
+      - name: Install the poetry-plugin-export
+        run: poetry self add poetry-plugin-export
+      - name: Update poetry lock file
+        run: poetry lock
+      - name: Export the project dependencies to requirements.txt
+        run: |
+          poetry export -f requirements.txt --output requirements.txt
+      - name: Get branch name
+        shell: bash
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if [[ -n "$(git status --porcelain requirements.txt poetry.lock)" ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          # Pull with rebase to get latest changes
+          git pull --rebase origin ${{ env.BRANCH_NAME }}
+          
+          # Stage and commit changes
+          git add requirements.txt poetry.lock
+          git commit -m "chore: update requirements.txt and poetry.lock [skip ci]"
+          
+          # Push with retry logic
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if git push origin ${{ env.BRANCH_NAME }}; then
+              break
+            else
+              if [ $attempt -eq $max_attempts ]; then
+                echo "Failed to push after $max_attempts attempts"
+                exit 1
+              fi
+              echo "Push failed, attempt $attempt of $max_attempts. Pulling and retrying..."
+              git pull --rebase origin ${{ env.BRANCH_NAME }}
+              attempt=$((attempt + 1))
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
