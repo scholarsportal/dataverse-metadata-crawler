@@ -1,0 +1,19 @@
+# Site settings
+title: Dataverse Metadata Crawler
+description: A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats.
+baseurl: "/dataverse-metadata-crawler" # Base URL (leave blank for root deployment)
+url: "https://scholarsportal.github.io" # Your GitHub Pages URL
+
+remote_theme: pages-themes/primer
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
+- jekyll-seo-tag    # Required by primer theme
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM # Enables GitHub Flavored Markdown (GFM)
+
+# Build settings
+source: ./
+destination: ./_site
