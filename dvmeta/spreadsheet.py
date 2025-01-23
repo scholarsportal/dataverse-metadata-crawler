@@ -243,14 +243,14 @@ class Spreadsheet:
 
         return df[final_column_order]
 
-    def make_csv(self, meta_dict: dict) -> tuple[str, str]:
-        """Create a CSV file from the metadata dictionary.
+    def _make_cm_meta_holding_list(self, meta_dict: dict) -> list[dict]:
+        """Create a nested list of metadata dictionaries.
 
         Args:
-            meta_dict (dict): Metadata dictionary
+            meta_dict (dict): Dataset metadata dictionary.
 
         Returns:
-            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+            list[dict]: List of metadata dictionaries (nested)
         """
         holding_list = []
         for key, _value in meta_dict.items():
@@ -292,9 +292,24 @@ class Spreadsheet:
 
             holding_list.append(jmespath_dict)
 
-        df = pd.DataFrame(holding_list)
+        return holding_list
 
-        # Reoder the columns in the DataFrame
+    def make_csv_file(self, meta_dict: dict) -> tuple[str, str]:
+        """Create a CSV file from the nested metadata list.
+
+        Args:
+            meta_dict (dict): Dataset metadata dictionary
+
+        Returns:
+            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+        """
+        # Create a DataFrame from the nested list
+
+        cm_meta_holding_list = self._make_cm_meta_holding_list(meta_dict)
+
+        df = pd.DataFrame(cm_meta_holding_list)
+
+        # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
         df = self._reoder_df_columns(df)
 
         # Create the CSV file

@@ -101,7 +101,12 @@ def main(
         sys.exit(1)
 
     # Crawl the collection tree metadata
-    collections_tree = metadata_crawler.get_collections_tree(collection_alias).json()
+    response = metadata_crawler.get_collections_tree(collection_alias)
+    if response is None:
+        print('Error: Failed to retrieve collections tree. The API request returned None.')
+        sys.exit(1)
+
+    collections_tree = response.json()
 
     # Add collection id and alias to config
     if collections_tree['status'] == 'OK':
@@ -148,7 +153,7 @@ def main(
         failed_metadata_uris = []
         if dvdfds_matadata:
             # Export dataverse_contents
-            print('\nCrawling Representation and File metadata of datasets...\n')
+            print('Crawling Representation and File metadata of datasets...\n')
             pid_list = list(pid_dict)
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
@@ -190,13 +195,6 @@ def main(
                     }
                 )
 
-            if spreadsheet:
-                # Export the metadata to a CSV file
-                csv_file_path, csv_file_checksum = Spreadsheet(config).make_csv(meta_dict)
-                json_file_checksum_dict.append(
-                    {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
-                )
-
         if permission:
             print('\nCrawling Permission metadata of datasets...\n')
             ds_id_list = [item['ds_id'] for item in pid_dict.values()]
@@ -230,6 +228,13 @@ def main(
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')
             json_file_checksum_dict.append(
                 {'type': 'Empty Dataverses', 'path': empty_dv_json, 'checksum': empty_dv_checksum}
+            )
+
+        if spreadsheet:
+            # Export the metadata to a CSV file
+            csv_file_path, csv_file_checksum = Spreadsheet(config).make_csv_file(meta_dict)
+            json_file_checksum_dict.append(
+                {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
             )
 
         return meta_dict, json_file_checksum_dict, failed_metadata_uris, collections_tree_flatten
