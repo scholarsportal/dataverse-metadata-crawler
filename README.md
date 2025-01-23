@@ -26,7 +26,7 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
 
 2. Change to the project directory
    ```sh
-   cd ~/dataverse-metadata-export-p
+   cd ./dataverse-metadata-crawler
    ```
 
 3. Create an environment file (.env)
@@ -65,6 +65,7 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
 python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALIAS -v VERSION
 ```
 **Required arguments:**
+
 | **Option**         | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                            | **Default**     |
 |--------------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
 | --collection_alias | -c        | TEXT     | Name of the collection to crawl. <br/> **[required]**                                                                                                                                                                                                                                      | None            |
@@ -72,6 +73,7 @@ python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALI
 
 
 **Optional arguments:**
+
 | **Option**           | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                            | **Default**               |
 |----------------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
 | --auth               | -a        | TEXT     | Authentication token to access the Dataverse repository. <br/> If                                                                                                                                                                                                          | None                      |
@@ -96,6 +98,7 @@ python3 dvmeta/main.py -c demo -v 1.0 -d -s -p -a xxxxxxxx-xxxx-xxxx-xxxx-xxxxxx
 ```
 
 ## 📂Output Structure
+
 | File                                      | Description                                                                                                                             |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | ds_metadata_yyyymmdd-HHMMSS.json          | Datasets' their data files' metadata in JSON format.                                                                                    |
@@ -145,21 +148,20 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse metadata Crawler (Version 0.1.0) [Computer software]. https://github.com/kenlhlui/dataverse-metadata-crawler-p
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.0) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
 ```
-@software{Lui_Dataverse_metadata_Crawler_2025,
+@software{Lui_Dataverse_Metadata_Crawler_2025,
 author = {Lui, Lok Hei},
 month = jan,
-title = {{Dataverse metadata Crawler}},
-url = {https://github.com/kenlhlui/dataverse-metadata-crawler-p},
+title = {{Dataverse Metadata Crawler}},
+url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
 version = {0.1.0},
 year = {2025}
 }
 ```
 
 ## ✍️Authors
-Ken Lui - Data Curation Specialist, Map and Data Library, University of Toronto - kenlh.lui@utoronto.ca
-
+Ken Lui - Data Curation Specialist, Map and Data Library, University of Toronto - [kenlh.lui@utoronto.ca](mailto:kenlh.lui@utoronto.ca)

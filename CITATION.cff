@@ -4,7 +4,7 @@ authors:
 - family-names: "Lui"
   given-names: "Lok Hei"
   orcid: "https://orcid.org/0000-0001-5077-1530"
-title: "Dataverse metadata Crawler"
+title: "Dataverse Metadata Crawler"
 version: 0.1.0
 date-released: 2025-01-16
-url: "https://github.com/kenlhlui/dataverse-metadata-crawler-p"
+url: "https://github.com/scholarsportal/dataverse-metadata-crawler"
