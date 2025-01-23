@@ -1,5 +1,5 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Licnese: MIT](https://img.shields.io/badge/Licnese-MIT-blue)](https://opensource.org/license/mit)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
 [![Dataverse](https://img.shields.io/badge/Dataverse-FFA500?)](https://dataverse.org/)
 [![Code Style: Black](https://img.shields.io/badge/code_style-black-black?)](https://github.com/psf/black)
 
@@ -7,10 +7,10 @@
 ![Screencapture of the CLI tool](res/screenshot.png)
 
 ## 📜Description
-A Python CLI tool for extracting and exporting metadata from [Dataverse](https://dataverse.org/) repositories. It supports bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (whole Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
+A Python CLI tool for extracting and exporting metadata from [Dataverse](https://dataverse.org/) repositories. It supports bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
 
 ## ✨Features
-1. Bulk metadata extraction from Dataverse repositories from any chosen level of collection (top level or selected collection)
+1. Bulk metadata extraction from Dataverse repositories at any chosen level of collection (top level or selected collection)
 2. JSON & CSV file export options
 
 ## 📦Prerequisites
@@ -38,11 +38,11 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
    notepad .env
    ```
 
-4. Configure environment file using your text editor at your choice
+4. Configure the environment (.env) file using the text editor of your choice.
    ```sh
    # .env file
    BASE_URL = "TARGET_REPO_URL"  # e.g., "https://demo.borealisdata.ca/"
-   API_KEY = "YOUR_API_KEY"      # Find in your Dataverse account settings. You may also specify it in the CLI interface (with -a flag)
+   API_KEY = "YOUR_API_KEY"      # Found in your Dataverse account settings. Can also be specified in the CLI interface using the -a flag.
    ```
 
 5. Set up virtual environment (recommended)
@@ -68,7 +68,7 @@ python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALI
 
 | **Option**         | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                            | **Default**     |
 |--------------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
-| --collection_alias | -c        | TEXT     | Name of the collection to crawl. <br/> **[required]**                                                                                                                                                                                                                                      | None            |
+| --collection_alias | -c        | TEXT     | The alias of the collection to crawl. <br/> **[required]**                                                                                                                                                                                                                                      | None            |
 | --version          | -v        | TEXT     | The Dataset version to crawl. Options include: <br/> • `draft` - The draft version, if any <br/> • `latest` - Either a draft (if exists) or the latest published version <br/> • `latest-published` - The latest published version <br/> • `x.y` - A specific version <br/> **[required]** | None (required) |
 
 
@@ -76,7 +76,7 @@ python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALI
 
 | **Option**           | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                            | **Default**               |
 |----------------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
-| --auth               | -a        | TEXT     | Authentication token to access the Dataverse repository. <br/> If                                                                                                                                                                                                          | None                      |
+| --auth               | -a        | TEXT     | Authentication token to access the Dataverse repository. <br/>                                                                                                                                                                                                          | None                      |
 | --log <br/> --no-log | -l        |          | Output a log file. <br/> Use `--no-log` to disable logging.                                                                                                                                                                                                      | `log` (unless `--no-log`) |
 | --dvdfds_metadata    | -d        |          | Output a JSON file containing metadata of Dataverses, Datasets, and Data Files.                                                                                                                                                                                                             |                           |
 | --permission         | -p        |          | Output a JSON file that stores permission metadata for all Datasets in the repository.                                                                                                                                                                                                     |                           |
@@ -101,13 +101,13 @@ python3 dvmeta/main.py -c demo -v 1.0 -d -s -p -a xxxxxxxx-xxxx-xxxx-xxxx-xxxxxx
 
 | File                                      | Description                                                                                                                             |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| ds_metadata_yyyymmdd-HHMMSS.json          | Datasets' their data files' metadata in JSON format.                                                                                    |
+| ds_metadata_yyyymmdd-HHMMSS.json          | Datasets representation & data files metadata in JSON format.                                                                                    |
 | empty_dv_yyyymmdd-HHMMSS.json             | The id of empty dataverse(s) in list format.                                                                                            |
 | failed_metadata_uris_yyyymmdd-HHMMSS.json | The URIs (URL) of datasets failed to be downloaded.                                                                                     |
 | permission_dict_yyyymmdd-HHMMSS.json      | The perission metadata of datasets with their dataset id.                                                                               |
 | pid_dict_yyyymmdd-HHMMSS.json             | Datasets' basic info with hierarchical information dictionary.Only exported if -p (permission) flag is used without -d (metadata) flag. |
 | pid_dict_dd_yyyymmdd-HHMMSS.json          | The Hierarchical information of deaccessioned/draft datasets.                                                                           |
-| ds_metadata_yyyymmdd-HHMMSS.csv           | Datasets' their data files' metadata in CSV format.                                                                                     |
+| ds_metadata_yyyymmdd-HHMMSS.csv           | Datasets and their data files' metadata in CSV format.                                                                                     |
 | log_yyyymmdd-HHMMSS.txt                   | Summary of the crawling work.                                                                                                           |
 
 ```sh
@@ -129,8 +129,8 @@ exported_files/
 No tests have been written yet. Contributions welcome!
 
 ## 💻Development
-1. Dependencies managment: [poetry](https://python-poetry.org/) - Update the pyproject.toml dependencies changes
-2. Linter: [ruff](https://docs.astral.sh/ruff/) - Linting rules are outlined in the pyproject.toml
+1. Dependencies managment: [poetry](https://python-poetry.org/) - Use `poetry` to manage dependencies and reflect changes in the `pyproject.toml` file.
+2. Linter: [ruff](https://docs.astral.sh/ruff/) - Follow the linting rules outlined in the `pyproject.toml` file.
 
 ## 🙌Contributing
 1. Fork the repository
@@ -148,18 +148,18 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.0) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.1) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
 ```
 @software{Lui_Dataverse_Metadata_Crawler_2025,
-author = {Lui, Lok Hei},
-month = jan,
-title = {{Dataverse Metadata Crawler}},
-url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-version = {0.1.0},
-year = {2025}
+  author = {Lui, Lok Hei},
+  month = {jan},
+  title = {Dataverse Metadata Crawler},
+  url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
+  version = {0.1.1},
+  year = {2025}
 }
 ```
 
