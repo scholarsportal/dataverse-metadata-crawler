@@ -33,8 +33,11 @@ class Spreadsheet:
             versionMinorNumber: data.versionMinorNumber,
             CM_Subtitle: data.metadataBlocks.citation.fields[?typeName==`subtitle`].value|[]
             CM_AltTitle: data.metadataBlocks.citation.fields[?typeName==`alternativeTitle`].value|[]
+            CM_AltURL: data.metadataBlocks.citation.fields[?typeName==`alternativeURL`].value|[]
+            CM_Agency: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdAgency.value
+            CM_ID: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdValue.value
             CM_Author: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorName.value
-            CM_ContactAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
+            CM_AuthorAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
             CM_AuthorID: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifier.value
             CM_AuthorIDType: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifierScheme.value
             CM_ContactName: data.metadataBlocks.citation.fields[?typeName==`datasetContact`].value|[*]|[].datasetContactName.value
@@ -74,8 +77,9 @@ class Spreadsheet:
             CM_Depositor: data.metadataBlocks.citation.fields[?typeName==`depositor`].value|[]
             CM_DepositDate: data.metadataBlocks.citation.fields[?typeName==`dateOfDeposit`].value|[]
             CM_TimeStart: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredStart.value
-            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
-            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
+            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredEnd.value
+            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
+            CM_CollectionEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
             CM_DataType: data.metadataBlocks.citation.fields[?typeName==`kindOfData`].value|[]
             CM_SeriesName: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesName.value
             CM_SeriesInfo: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesInformation.value
