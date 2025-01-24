@@ -11,14 +11,11 @@ Version
 FileCount
 FileSize
 FileSize_normalized
-FileFormat
 DataverseSubCollection
 License
 RestrictedFiles
 RequestAcces
 TermsAccess
-TermsUse
-Citationrequirements
 DF_Hierarchy
 DF_Tags
 DF_Description
@@ -114,5 +111,3 @@ DS_ContribPlus
 DS_Curator
 DS_FileDown
 DS_Member
-DS_UOFT_Admin
-DS_Groups

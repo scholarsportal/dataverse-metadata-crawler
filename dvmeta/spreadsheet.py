@@ -33,8 +33,11 @@ class Spreadsheet:
             versionMinorNumber: data.versionMinorNumber,
             CM_Subtitle: data.metadataBlocks.citation.fields[?typeName==`subtitle`].value|[]
             CM_AltTitle: data.metadataBlocks.citation.fields[?typeName==`alternativeTitle`].value|[]
+            CM_AltURL: data.metadataBlocks.citation.fields[?typeName==`alternativeURL`].value|[]
+            CM_Agency: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdAgency.value
+            CM_ID: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdValue.value
             CM_Author: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorName.value
-            CM_ContactAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
+            CM_AuthorAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
             CM_AuthorID: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifier.value
             CM_AuthorIDType: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifierScheme.value
             CM_ContactName: data.metadataBlocks.citation.fields[?typeName==`datasetContact`].value|[*]|[].datasetContactName.value
@@ -74,8 +77,9 @@ class Spreadsheet:
             CM_Depositor: data.metadataBlocks.citation.fields[?typeName==`depositor`].value|[]
             CM_DepositDate: data.metadataBlocks.citation.fields[?typeName==`dateOfDeposit`].value|[]
             CM_TimeStart: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredStart.value
-            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
-            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
+            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredEnd.value
+            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
+            CM_CollectionEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
             CM_DataType: data.metadataBlocks.citation.fields[?typeName==`kindOfData`].value|[]
             CM_SeriesName: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesName.value
             CM_SeriesInfo: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesInformation.value
@@ -177,7 +181,7 @@ class Spreadsheet:
         return result_dict
 
     @staticmethod
-    def _get_metadata_blocks(dictionary: dict) -> dict:
+    def _get_metadata_blocks_usage(dictionary: dict) -> dict:
         metadata_block_dict = {
             'Meta_Geo': 'geospatial',
             'Meta_SSHM': 'socialscience',
@@ -193,6 +197,33 @@ class Spreadsheet:
             result_dict[key] = value in dictionary
 
         return result_dict
+
+    @staticmethod
+    def _get_datafile_meta_usage(dictionary: dict) -> dict:
+        # Get the use of data file directoryLabel (DF_Hierarchy),
+        # tags (categories; DF_Tags) & description (DF_Description).
+        if dictionary.get('data', {}).get('files'):
+            file_nested_list = jmespath.search('data.files[*]', dictionary)
+
+            # Get the count of directoryLabel if it is not None
+            directorylabel_count = len([file for file in file_nested_list if file.get('directoryLabel') is not None])
+
+            # Get the count of categories if it is not None
+            categories_count = len([
+                file for file in file_nested_list
+                if file.get('dataFile', {}).get('categories') is not None
+            ])
+
+            # Get the count of description if it is not None
+            description_count = len([
+                file for file in file_nested_list
+                if file.get('dataFile', {}).get('description') is not None
+            ])
+
+            return {'DF_Hierarchy': directorylabel_count,
+                    'DF_Tags': categories_count,
+                    'DF_Description': description_count}
+        return {'DF_Hierarchy': 0, 'DF_Tags': 0, 'DF_Description': 0}
 
     def _get_spreadsheet_order(self) -> list[str]:
         with Path(self.spreadsheet_order_file_path).open(encoding='utf-8') as file:
@@ -212,18 +243,23 @@ class Spreadsheet:
 
         return df[final_column_order]
 
-    def make_csv(self, meta_dict: dict) -> tuple[str, str]:
-        """Create a CSV file from the metadata dictionary.
+    def _make_cm_meta_holding_list(self, meta_dict: dict) -> list[dict]:
+        """Create a nested list of metadata dictionaries.
 
         Args:
-            meta_dict (dict): Metadata dictionary
+            meta_dict (dict): Dataset metadata dictionary.
 
         Returns:
-            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+            list[dict]: List of metadata dictionaries (nested)
         """
         holding_list = []
         for key, _value in meta_dict.items():
             jmespath_dict: dict = jmespath.search(f'{self.search_string}', meta_dict[key])
+
+            # Get the use of data file hierarchy (folders, DF_Hierarchy),
+            # file tags (categories; DF_Tags) &  description (DF_Description)
+            jmespath_dict.update(self._get_datafile_meta_usage(meta_dict[key]))
+
             # Get the file size and count
             jmespath_dict['FileSize'] = self._get_data_files_size(meta_dict[key])
             jmespath_dict['FileSize_normalized'] = convert_size(jmespath_dict['FileSize'])
@@ -245,7 +281,7 @@ class Spreadsheet:
             jmespath_dict.update(self._get_dataset_subjects(jmespath_dict))
 
             # Get the metadata blocks and add them to the result dictionary
-            jmespath_dict.update(self._get_metadata_blocks(jmespath_dict))
+            jmespath_dict.update(self._get_metadata_blocks_usage(jmespath_dict))
 
             # Drop the versionNumber and versionMinorNumber keys from the dictionary
             jmespath_dict.pop('versionNumber', None)
@@ -256,9 +292,24 @@ class Spreadsheet:
 
             holding_list.append(jmespath_dict)
 
-        df = pd.DataFrame(holding_list)
+        return holding_list
 
-        # Reoder the columns in the DataFrame
+    def make_csv_file(self, meta_dict: dict) -> tuple[str, str]:
+        """Create a CSV file from the nested metadata list.
+
+        Args:
+            meta_dict (dict): Dataset metadata dictionary
+
+        Returns:
+            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+        """
+        # Create a DataFrame from the nested list
+
+        cm_meta_holding_list = self._make_cm_meta_holding_list(meta_dict)
+
+        df = pd.DataFrame(cm_meta_holding_list)
+
+        # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
         df = self._reoder_df_columns(df)
 
         # Create the CSV file
