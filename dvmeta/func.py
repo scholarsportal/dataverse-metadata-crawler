@@ -192,6 +192,10 @@ def add_perrmission_info(meta_dict: dict, permission_dict: Optional[dict] = None
                     # Remove from permission_dict_copy
                     permission_dict_copy.pop(pid_key)
                     break
+        for _meta_key, meta_value in meta_dict.items():
+            if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId'):
+                if 'permission_info' not in meta_value:
+                    meta_value['permission_info'] = {'status': 'NA', 'data': []}
 
         return meta_dict, permission_dict_copy
 
