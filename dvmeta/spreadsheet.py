@@ -28,8 +28,9 @@ class Spreadsheet:
             ReleaseTime: data.releaseTime,
             CreateTime: data.createTime,
             License: data.license.name
-            TermsAccess: data.termsOfAccess
+            TermsOfUse: data.termsOfUse
             RequestAcces: data.fileAccessRequest
+            TermsAccess: data.termsOfAccess
             versionNumber: data.versionNumber,
             versionMinorNumber: data.versionMinorNumber,
             CM_Subtitle: data.metadataBlocks.citation.fields[?typeName==`subtitle`].value|[]
