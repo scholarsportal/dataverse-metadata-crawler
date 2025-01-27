@@ -1,7 +1,8 @@
 DatasetTitle
 DatasetURL
-DatasetPersistentId
+DS_Path
 ID
+DatasetPersistentId
 DatasetId
 VersionState
 LastUpdateTime
@@ -11,14 +12,11 @@ Version
 FileCount
 FileSize
 FileSize_normalized
-FileFormat
-DataverseSubCollection
 License
 RestrictedFiles
+TermsOfUse
 RequestAcces
 TermsAccess
-TermsUse
-Citationrequirements
 DF_Hierarchy
 DF_Tags
 DF_Description
@@ -104,6 +102,7 @@ Meta_Astro
 Meta_LS
 Meta_Journal
 Meta_CWF
+DS_Permission
 DS_Collab
 DS_Collab_In
 DS_Collab_Ex
@@ -114,5 +113,3 @@ DS_ContribPlus
 DS_Curator
 DS_FileDown
 DS_Member
-DS_UOFT_Admin
-DS_Groups
