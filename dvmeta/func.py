@@ -1,6 +1,7 @@
 """This module contains functions used in the dvmeta package."""
 import os
 import re
+from typing import Optional
 
 import httpx
 import jmespath
@@ -26,23 +27,23 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
     write_dict = {}
     for key, _item in read_dict.items():
         result = jmespath.search(
-            "data[?type=='dataset'].{ds_id: id, protocol: protocol, authority: authority, identifier: identifier, path: path, path_ids: path_ids}",  # noqa: E501
+            "data[?type=='dataset'].{datasetId: id, protocol: protocol, authority: authority, identifier: identifier, path: path, pathIds: pathIds}",  # noqa: E501
             read_dict[key],  # noqa: PLR1733
         )
         if result:
             for item in result:
                 pid = f"{item['protocol']}:{item['authority']}/{item['identifier']}"
-                ds_id = item['ds_id']
+                id = item['datasetId']
                 path = '/' + item['path'] if item['path'] else None
-                path_ids = item['path_ids']
+                path_ids = item['pathIds']
                 dict_to_append = {
-                    str(pid): {  # pid needs to be converted to string if it's not already
-                        'collection_alias': config['COLLECTION_ALIAS'],
-                        'collection_id': config['COLLECTION_ID'],
-                        'pid': pid,
-                        'ds_id': ds_id,
+                    str(id): {  # pid needs to be converted to string if it's not already
+                        'CollectionAlias': config['COLLECTION_ALIAS'],
+                        'CollectionID': config['COLLECTION_ID'],
+                        'datasetPersistentId': pid,
+                        'datasetId': id,
                         'path': path,
-                        'path_ids': path_ids,
+                        'pathIds': path_ids,
                     }
                 }
                 write_dict.update(dict_to_append)
@@ -139,7 +140,7 @@ def count_files_size(read_dict: dict) -> tuple:
 
 
 def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
-    """Add path_ids and path to dataverse_contents from collections_tree_flatten.
+    """Add pathIds and path to dataverse_contents from collections_tree_flatten.
 
     Args:
         des_dict (dict): Dictionary containing the metadata of datasets
@@ -153,22 +154,52 @@ def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
             if value['data']:
                 for item in value['data']:
                     item.update({'path': ref_dict[key]['path']})
-                    item.update({'path_ids': ref_dict[key]['path_ids']})
+                    item.update({'pathIds': ref_dict[key]['pathIds']})
             else:
                 value['data'].append({'path': ref_dict[key]['path']})
-                value['data'].append({'path_ids': ref_dict[key]['path_ids']})
+                value['data'].append({'pathIds': ref_dict[key]['pathIds']})
     return des_dict
 
 
-def add_path_info(meta_dict: dict, pid_dict: dict) -> tuple:
-    """Add path_info to the metadata dictionary."""
-    pid_dict_copy = pid_dict.copy()
-    for key in list(pid_dict_copy.keys()):
-        if key in meta_dict:
-            meta_dict[key]['path_info'] = pid_dict_copy[key]
-            pid_dict_copy.pop(key)
+def add_path_info(meta_dict: dict, ds_dict: dict) -> tuple:
+    """Add path_info to the metadata dictionary, handling nested structures."""
+    ds_dict_copy = ds_dict.copy()
+    for pid_key, pid_value in list(ds_dict_copy.items()):
+        pid_key_str = str(pid_key)
+        # Traverse the meta_dict to find matching datasetId
+        for _meta_key, meta_value in meta_dict.items():
+            if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
+                # Add path_info to the appropriate nested dictionary
+                meta_value['path_info'] = pid_value
+                # Remove from ds_dict_copy
+                ds_dict_copy.pop(pid_key)
+                break
 
-    return meta_dict, pid_dict_copy
+    return meta_dict, ds_dict_copy
+
+
+def add_perrmission_info(meta_dict: dict, permission_dict: Optional[dict] = None) -> tuple:
+    """Add permission_info to the metadata dictionary, handling nested structures."""
+    if isinstance(permission_dict, dict):
+        permission_dict_copy = permission_dict.copy()
+        for pid_key, pid_value in list(permission_dict_copy.items()):
+            pid_key_str = str(pid_key)
+            # Traverse the meta_dict to find matching datasetId
+            for _meta_key, meta_value in meta_dict.items():
+                if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
+                    # Add path_info to the appropriate nested dictionary
+                    meta_value['permission_info'] = pid_value
+                    # Remove from permission_dict_copy
+                    permission_dict_copy.pop(pid_key)
+                    break
+        for _meta_key, meta_value in meta_dict.items():
+            if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId'):
+                if 'permission_info' not in meta_value:
+                    meta_value['permission_info'] = {'status': 'NA', 'data': []}
+
+        return meta_dict, permission_dict_copy
+
+    return meta_dict, None
 
 
 def load_env() -> dict:
@@ -190,3 +221,24 @@ def load_env() -> dict:
     else:
         config['HEADERS'] = {'Accept': 'application/json'}
     return config
+
+
+def replace_key_with_dataset_id(dictionary: dict) -> dict:
+    """Replace the top-level key in the dictionary with the value of 'datasetId' in the nested 'data'.
+
+    Args:
+        dictionary (dict): The original dictionary.
+
+    Returns:
+        dict: A new dictionary with keys replaced by the value of 'datasetId'.
+    """
+    new_dict = {}
+    for old_key, value in dictionary.items():
+        # Check if the 'data' key exists and has 'datasetId'
+        if isinstance(value, dict) and value.get('data', {}).get('datasetId'):
+            new_key = value.get('data', {}).get('datasetId')  # Get the value of 'datasetId'
+            new_dict[new_key] = value  # Use it as the new key
+        else:
+            # Keep the original key if 'id' is missing
+            new_dict[old_key] = value
+    return new_dict

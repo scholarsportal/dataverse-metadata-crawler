@@ -19,6 +19,7 @@ class Spreadsheet:
         self.config = config
         self.search_string = """{
             DatasetTitle: data.metadataBlocks.citation.fields[?typeName==`title`].value|[]
+            DS_Path: path_info.path
             DatasetPersistentId: data.datasetPersistentId,
             ID: data.id,
             DatasetId: data.datasetId,
@@ -27,8 +28,9 @@ class Spreadsheet:
             ReleaseTime: data.releaseTime,
             CreateTime: data.createTime,
             License: data.license.name
-            TermsAccess: data.termsOfAccess
+            TermsOfUse: data.termsOfUse
             RequestAcces: data.fileAccessRequest
+            TermsAccess: data.termsOfAccess
             versionNumber: data.versionNumber,
             versionMinorNumber: data.versionMinorNumber,
             CM_Subtitle: data.metadataBlocks.citation.fields[?typeName==`subtitle`].value|[]
@@ -92,7 +94,14 @@ class Spreadsheet:
             CM_OriginSources: data.metadataBlocks.citation.fields[?typeName==`originOfSources`].value|[]
             CM_CharSources: data.metadataBlocks.citation.fields[?typeName==`characteristicOfSources`].value|[]
             CM_DocSources: data.metadataBlocks.citation.fields[?typeName==`accessToSources`].value|[]
-            DataverseSubCollection: path_info.path
+            DS_Permission: permission_info.data
+            DS_Collab: length(permission_info.data)
+            DS_Admin: length(permission_info.data[?_roleAlias=='admin'])
+            DS_Contrib: length(permission_info.data[?_roleAlias=='contributor'])
+            DS_ContribPlus: length(permission_info.data[?_roleAlias=='fullContributor'])
+            DS_Curator: length(permission_info.data[?_roleAlias=='curator'])
+            DS_FileDown: length(permission_info.data[?_roleAlias=='fileDownloader'])
+            DS_Member: length(permission_info.data[?_roleAlias=='member'])
             }"""  # noqa: E501
         self.csv_file_dir = DirManager().csv_files_dir()
         self.spreadsheet_order_file_path = Path(DirManager().res_dir) / 'spreadsheet_order.csv'
@@ -225,6 +234,24 @@ class Spreadsheet:
                     'DF_Description': description_count}
         return {'DF_Hierarchy': 0, 'DF_Tags': 0, 'DF_Description': 0}
 
+    @staticmethod
+    def _parse_permission_values(dictionary: dict) -> dict | None:
+        """Parse the NA value to permission_info.data, if the value is not available."""
+        if dictionary.get('permission_info', {}).get('status', {}) == 'NA':
+            # If the status is NA, set the DS_Permission, DS_Collab, DS_Admin, DS_Contrib
+            # DS_ContribPlus, DS_Curator, DS_FileDown, DS_Member to NA
+            return {
+                'DS_Permission': False,
+                'DS_Collab': 'NA',
+                'DS_Admin': 'NA',
+                'DS_Contrib': 'NA',
+                'DS_ContribPlus': 'NA',
+                'DS_Curator': 'NA',
+                'DS_FileDown': 'NA',
+                'DS_Member': 'NA'
+            }
+        return {'DS_Permission': True}
+
     def _get_spreadsheet_order(self) -> list[str]:
         with Path(self.spreadsheet_order_file_path).open(encoding='utf-8') as file:
             return file.read().splitlines()
@@ -286,6 +313,9 @@ class Spreadsheet:
             # Drop the versionNumber and versionMinorNumber keys from the dictionary
             jmespath_dict.pop('versionNumber', None)
             jmespath_dict.pop('versionMinorNumber', None)
+
+            # Update the permission info if the status is NA
+            jmespath_dict.update(self._parse_permission_values(meta_dict[key]) or {})
 
             # Last step: Turn the lists in the dictionary into strings
             jmespath_dict = {key: list_to_string(value) if isinstance(value, list) else value for key, value in jmespath_dict.items()}
