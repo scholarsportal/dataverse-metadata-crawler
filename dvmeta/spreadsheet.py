@@ -337,8 +337,6 @@ class Spreadsheet:
 
         cm_meta_holding_list = self._make_cm_meta_holding_list(meta_dict)
 
-        
-
         df = pd.DataFrame(cm_meta_holding_list)
 
         # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
