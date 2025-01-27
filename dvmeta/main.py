@@ -125,7 +125,7 @@ def main(
 
     async def main_crawler():
         # Initialize empty dict and list to store metadata
-        ds_dict = {'pid': []}
+        ds_dict = {'datasetPersistentId': []}
         failed_metadata_ids = []
         json_file_checksum_dict = []
         permission_dict = {}
@@ -143,7 +143,7 @@ def main(
         print('Getting basic metadata of datasets in across dataverses (incl. all children)...\n')
         dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(collection_id_list)
 
-        # Add path_ids and path to dataverse_contents from collections_tree_flatten
+        # Add pathIds and path to dataverse_contents from collections_tree_flatten
         dataverse_contents = func.add_path_to_dataverse_contents(dataverse_contents, collections_tree_flatten)
 
         # Get URIs in collections_tree_flatten and append them to ds_dict, and return empty dataverse to empty_dv
@@ -155,7 +155,7 @@ def main(
         if dvdfds_matadata:
             # Export dataverse_contents
             print('Crawling Representation and File metadata of datasets...\n')
-            pid_list = [item['pid'] for item in ds_dict.values()]
+            pid_list = [item['datasetPersistentId'] for item in ds_dict.values()]
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
             # Replace the key with the Data #TEMPORARY FIX

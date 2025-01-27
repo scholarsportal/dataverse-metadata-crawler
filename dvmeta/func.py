@@ -27,7 +27,7 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
     write_dict = {}
     for key, _item in read_dict.items():
         result = jmespath.search(
-            "data[?type=='dataset'].{datasetId: id, protocol: protocol, authority: authority, identifier: identifier, path: path, path_ids: path_ids}",  # noqa: E501
+            "data[?type=='dataset'].{datasetId: id, protocol: protocol, authority: authority, identifier: identifier, path: path, pathIds: pathIds}",  # noqa: E501
             read_dict[key],  # noqa: PLR1733
         )
         if result:
@@ -35,15 +35,15 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
                 pid = f"{item['protocol']}:{item['authority']}/{item['identifier']}"
                 id = item['datasetId']
                 path = '/' + item['path'] if item['path'] else None
-                path_ids = item['path_ids']
+                path_ids = item['pathIds']
                 dict_to_append = {
                     str(id): {  # pid needs to be converted to string if it's not already
-                        'collection_alias': config['COLLECTION_ALIAS'],
-                        'collection_id': config['COLLECTION_ID'],
-                        'pid': pid,
+                        'CollectionAlias': config['COLLECTION_ALIAS'],
+                        'CollectionID': config['COLLECTION_ID'],
+                        'datasetPersistentId': pid,
                         'datasetId': id,
                         'path': path,
-                        'path_ids': path_ids,
+                        'pathIds': path_ids,
                     }
                 }
                 write_dict.update(dict_to_append)
@@ -140,7 +140,7 @@ def count_files_size(read_dict: dict) -> tuple:
 
 
 def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
-    """Add path_ids and path to dataverse_contents from collections_tree_flatten.
+    """Add pathIds and path to dataverse_contents from collections_tree_flatten.
 
     Args:
         des_dict (dict): Dictionary containing the metadata of datasets
@@ -154,10 +154,10 @@ def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
             if value['data']:
                 for item in value['data']:
                     item.update({'path': ref_dict[key]['path']})
-                    item.update({'path_ids': ref_dict[key]['path_ids']})
+                    item.update({'pathIds': ref_dict[key]['pathIds']})
             else:
                 value['data'].append({'path': ref_dict[key]['path']})
-                value['data'].append({'path_ids': ref_dict[key]['path_ids']})
+                value['data'].append({'pathIds': ref_dict[key]['pathIds']})
     return des_dict
 
 

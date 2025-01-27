@@ -169,7 +169,7 @@ def flatten_collection(readdict, path_name='', path_ids=[]):
 
             current_path_ids = path_ids + [item['id']]
 
-            new_item['path_ids'] = current_path_ids
+            new_item['pathIds'] = current_path_ids
             new_item['path'] = f"{path_name}/{item['name']}" if path_name else item['name']
             new_item.pop('children', None)
             write_dict[item['id']] = new_item
