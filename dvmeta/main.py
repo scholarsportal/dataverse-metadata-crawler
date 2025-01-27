@@ -203,7 +203,7 @@ def main(
 
         if permission:
             print('\nCrawling Permission metadata of datasets...\n')
-            ds_id_list = [item['id'] for item in ds_dict.values()]
+            ds_id_list = [item['datasetId'] for item in ds_dict.values()]
             permission_dict, failed_permission_uris = await (metadata_crawler.get_datasets_permissions(ds_id_list))
 
             if not dvdfds_matadata:  # Delay the merging of permission metadata until the representation/file metadata is crawled

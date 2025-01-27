@@ -27,13 +27,13 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
     write_dict = {}
     for key, _item in read_dict.items():
         result = jmespath.search(
-            "data[?type=='dataset'].{id: id, protocol: protocol, authority: authority, identifier: identifier, path: path, path_ids: path_ids}",  # noqa: E501
+            "data[?type=='dataset'].{datasetId: id, protocol: protocol, authority: authority, identifier: identifier, path: path, path_ids: path_ids}",  # noqa: E501
             read_dict[key],  # noqa: PLR1733
         )
         if result:
             for item in result:
                 pid = f"{item['protocol']}:{item['authority']}/{item['identifier']}"
-                id = item['id']
+                id = item['datasetId']
                 path = '/' + item['path'] if item['path'] else None
                 path_ids = item['path_ids']
                 dict_to_append = {
@@ -41,7 +41,7 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
                         'collection_alias': config['COLLECTION_ALIAS'],
                         'collection_id': config['COLLECTION_ID'],
                         'pid': pid,
-                        'id': id,
+                        'datasetId': id,
                         'path': path,
                         'path_ids': path_ids,
                     }
@@ -234,7 +234,7 @@ def replace_key_with_dataset_id(dictionary: dict) -> dict:
     """
     new_dict = {}
     for old_key, value in dictionary.items():
-        # Check if the 'data' key exists and has 'id'
+        # Check if the 'data' key exists and has 'datasetId'
         if isinstance(value, dict) and value.get('data', {}).get('datasetId'):
             new_key = value.get('data', {}).get('datasetId')  # Get the value of 'datasetId'
             new_dict[new_key] = value  # Use it as the new key
