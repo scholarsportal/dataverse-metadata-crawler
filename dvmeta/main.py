@@ -162,30 +162,15 @@ def main(
             # Add the path_info to the metadata
             meta_dict, pid_dict_dd = func.add_path_info(meta_dict, ds_dict)
 
-            if not permission:  # Delay the merging of permission metadata until the permission metadata is crawled
-
-                # Export the metadata to a JSON file
-                meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict')
-                json_file_checksum_dict.append(
-                    {
-                        'type': 'Dataset Metadata (Representation & File)',
-                        'path': meta_json_file_path,
-                        'checksum': meta_json_checksum,
-                    }
-                )
-                print(
-                    f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n'
-                )
-
-                # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
-                pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
-                json_file_checksum_dict.append(
-                    {
-                        'type': 'Hierarchical Information of Datasets(deaccessioned/draft)',
-                        'path': pid_dict_json,
-                        'checksum': pid_dict_checksum,
-                    }
-                )
+            # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
+            pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
+            json_file_checksum_dict.append(
+                {
+                    'type': 'Hierarchical Information of Datasets(deaccessioned/draft)',
+                    'path': pid_dict_json,
+                    'checksum': pid_dict_checksum,
+                }
+            )
 
             if failed:
                 failed_metadata_uris_json, failed_metadata_uris_checksum = utils.orjson_export(
@@ -230,21 +215,21 @@ def main(
                     }
                 )
 
-        # Combine the metadata and permission metadata
-        if dvdfds_matadata and permission:
-            if isinstance(permission_dict, dict):
-                meta_dict = func.add_perrmission_info(meta_dict, permission_dict)[0]
+        # Combine the metadata and permission metadata, if both are provided
+        # Else write dummy permission metadata to the metadata
+        meta_dict = func.add_permission_info(meta_dict, permission_dict if isinstance(permission_dict, dict) and permission_dict else None)
 
-            # Export the metadata to a JSON file
+        # Export the metadata to a JSON file
+        meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
+        json_file_checksum_dict.append(
+            {
+                'type': 'Dataset Metadata (Representation, File & Permission)',
+                'path': meta_json_file_path,
+                'checksum': meta_json_checksum,
+            }
+        )
 
-            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
-            json_file_checksum_dict.append(
-                {
-                    'type': 'Dataset Metadata (Representation, File & Permission)',
-                    'path': meta_json_file_path,
-                    'checksum': meta_json_checksum,
-                }
-            )
+        print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
 
         if empty_dv:
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')

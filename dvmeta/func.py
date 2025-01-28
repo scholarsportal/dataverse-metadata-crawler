@@ -178,28 +178,24 @@ def add_path_info(meta_dict: dict, ds_dict: dict) -> tuple:
     return meta_dict, ds_dict_copy
 
 
-def add_perrmission_info(meta_dict: dict, permission_dict: Optional[dict] = None) -> tuple:
+def add_permission_info(meta_dict: dict, permission_dict: Optional[dict] = None) -> dict:
     """Add permission_info to the metadata dictionary, handling nested structures."""
     if isinstance(permission_dict, dict):
-        permission_dict_copy = permission_dict.copy()
-        for pid_key, pid_value in list(permission_dict_copy.items()):
+        for pid_key, pid_value in list(permission_dict.items()):
             pid_key_str = str(pid_key)
             # Traverse the meta_dict to find matching datasetId
             for _meta_key, meta_value in meta_dict.items():
                 if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
                     # Add path_info to the appropriate nested dictionary
                     meta_value['permission_info'] = pid_value
-                    # Remove from permission_dict_copy
-                    permission_dict_copy.pop(pid_key)
+                    # Remove from permission_dict
+                    permission_dict.pop(pid_key)
                     break
-        for _meta_key, meta_value in meta_dict.items():
-            if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId'):
-                if 'permission_info' not in meta_value:
-                    meta_value['permission_info'] = {'status': 'NA', 'data': []}
+    for _meta_key, meta_value in meta_dict.items():
+        if 'permission_info' not in meta_value:
+            meta_value['permission_info'] = {'status': 'NA', 'data': []}
 
-        return meta_dict, permission_dict_copy
-
-    return meta_dict, None
+    return meta_dict
 
 
 def load_env() -> dict:
