@@ -1,12 +1,15 @@
 name: Poetry export requirements.txt
 on:
-  push:
+  pull_request:
     branches:
-      - '*'  # Trigger on any push to any branch
+      - 'main'  # Trigger only on pull requests made to the main branch
     paths:
       - 'requirements.txt'
       - 'pyproject.toml'
       - 'poetry.lock'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   poetry-export_dependencies:
     strategy:
