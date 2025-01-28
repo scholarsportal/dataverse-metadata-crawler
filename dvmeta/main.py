@@ -219,17 +219,17 @@ def main(
         # Else write dummy permission metadata to the metadata
         meta_dict = func.add_permission_info(meta_dict, permission_dict if isinstance(permission_dict, dict) and permission_dict else None)
 
-        # Export the metadata to a JSON file
-        meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
-        json_file_checksum_dict.append(
-            {
-                'type': 'Dataset Metadata (Representation, File & Permission)',
-                'path': meta_json_file_path,
-                'checksum': meta_json_checksum,
-            }
-        )
-
-        print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
+        if meta_dict:
+            # Export the metadata to a JSON file
+            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
+            json_file_checksum_dict.append(
+                {
+                    'type': 'Dataset Metadata (Representation, File & Permission)',
+                    'path': meta_json_file_path,
+                    'checksum': meta_json_checksum,
+                }
+            )
+            print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
 
         if empty_dv:
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')
