@@ -157,7 +157,6 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-
 Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.1) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
