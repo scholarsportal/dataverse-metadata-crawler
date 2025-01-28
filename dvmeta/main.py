@@ -64,15 +64,13 @@ def main(
         False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets'
     ),
 ):
-    """A command line utility that crawls a dataverse repository, extracting metadata for dataverses, datasets, and permissions, and then stores it in JSON format."""
-    # Load the environment variables #! This need to be modified as it nullifies the auth token provided by the user
+    """A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats."""
+    # Load the environment variables
     config: dict = func.load_env()
 
     config['COLLECTION_ALIAS'] = collection_alias
     config['VERSION'] = version
-    config['API_KEY'] = (
-        auth if auth else config['API_KEY']
-    ) # Reassign the API_KEY and replace it specified in the .env file
+    config['API_KEY'] = (auth if auth else config['API_KEY'])  # Reassign the API_KEY and replace it specified in the .env file, if provided in the CLI interface
 
     # Check if -s flag is provided without -d flag
     func.validate_spreadsheet(spreadsheet, dvdfds_matadata)
