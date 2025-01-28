@@ -64,15 +64,13 @@ def main(
         False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets'
     ),
 ):
-    """A command line utility that crawls a dataverse repository, extracting metadata for dataverses, datasets, and permissions, and then stores it in JSON format."""
-    # Load the environment variables #! This need to be modified as it nullifies the auth token provided by the user
+    """A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats."""
+    # Load the environment variables
     config: dict = func.load_env()
 
     config['COLLECTION_ALIAS'] = collection_alias
     config['VERSION'] = version
-    config['API_KEY'] = (
-        auth if auth else config['API_KEY']
-    ) # Reassign the API_KEY and replace it specified in the .env file
+    config['API_KEY'] = (auth if auth else config['API_KEY'])  # Reassign the API_KEY and replace it specified in the .env file, if provided in the CLI interface
 
     # Check if -s flag is provided without -d flag
     func.validate_spreadsheet(spreadsheet, dvdfds_matadata)
@@ -164,30 +162,15 @@ def main(
             # Add the path_info to the metadata
             meta_dict, pid_dict_dd = func.add_path_info(meta_dict, ds_dict)
 
-            if not permission:  # Delay the merging of permission metadata until the permission metadata is crawled
-
-                # Export the metadata to a JSON file
-                meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict')
-                json_file_checksum_dict.append(
-                    {
-                        'type': 'Dataset Metadata (Representation & File)',
-                        'path': meta_json_file_path,
-                        'checksum': meta_json_checksum,
-                    }
-                )
-                print(
-                    f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n'
-                )
-
-                # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
-                pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
-                json_file_checksum_dict.append(
-                    {
-                        'type': 'Hierarchical Information of Datasets(deaccessioned/draft)',
-                        'path': pid_dict_json,
-                        'checksum': pid_dict_checksum,
-                    }
-                )
+            # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
+            pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
+            json_file_checksum_dict.append(
+                {
+                    'type': 'Hierarchical Information of Datasets(deaccessioned/draft)',
+                    'path': pid_dict_json,
+                    'checksum': pid_dict_checksum,
+                }
+            )
 
             if failed:
                 failed_metadata_uris_json, failed_metadata_uris_checksum = utils.orjson_export(
@@ -232,14 +215,13 @@ def main(
                     }
                 )
 
-        # Combine the metadata and permission metadata
-        if dvdfds_matadata and permission:
-            if isinstance(permission_dict, dict):
-                meta_dict = func.add_perrmission_info(meta_dict, permission_dict)[0]
+        # Combine the metadata and permission metadata, if both are provided
+        # Else write dummy permission metadata to the metadata
+        meta_dict = func.add_permission_info(meta_dict, permission_dict if isinstance(permission_dict, dict) and permission_dict else None)
 
+        if meta_dict:
             # Export the metadata to a JSON file
-
-            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
+            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'ds_metadata')
             json_file_checksum_dict.append(
                 {
                     'type': 'Dataset Metadata (Representation, File & Permission)',
@@ -247,6 +229,7 @@ def main(
                     'checksum': meta_json_checksum,
                 }
             )
+            print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
 
         if empty_dv:
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')

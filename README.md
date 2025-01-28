@@ -29,7 +29,7 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
    cd ./dataverse-metadata-crawler
    ```
 
-3. Create an environment file (.env)
+3. Create an environment file (`.env`)
    ```sh
    touch .env  # For Unix/MacOS
    nano .env   # or vim .env, or your preferred editor
@@ -38,11 +38,16 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
    notepad .env
    ```
 
-4. Configure the environment (.env) file using the text editor of your choice.
+4. Configure the environment (`.env`) file using the text editor of your choice.
    ```sh
    # .env file
-   BASE_URL = "TARGET_REPO_URL"  # e.g., "https://demo.borealisdata.ca/"
+   BASE_URL = "TARGET_REPO_URL"  # Base URL of the repository; e.g., "https://demo.borealisdata.ca/"
    API_KEY = "YOUR_API_KEY"      # Found in your Dataverse account settings. Can also be specified in the CLI interface using the -a flag.
+   ```
+   Your `.env` file should look like this:
+   ```sh
+   BASE_URL = "https://demo.borealisdata.ca/"
+   API_KEY = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX"
    ```
 
 5. Set up virtual environment (recommended)
@@ -115,15 +120,19 @@ exported_files/
 ├── json_files/
 │   └── ds_metadata_yyyymmdd-HHMMSS.json # With -d flag enabled
 │   └── empty_dv_yyyymmdd-HHMMSS.json # With -e flag enabled
-│   └── failed_metadata_uris_yyyymmdd-HHMMSS.json 
-│   └── permission_dict_yyyymmdd-HHMMSS.json # With -p flag enabled
-│   └── pid_dict_yyyymmdd-HHMMSS.json # Only exported if -p flag is used without -d flag
-│   └── pid_dict_dd_yyyymmdd-HHMMSS.json # Hierarchical information of deaccessioned/draft datasets
+│   └── failed_metadata_uris_yyyymmdd-HHMMSS.json  # With -f flag enabled
+│   └── permission_dict_yyyymmdd-HHMMSS.json # With only -p flag enabled
+│   └── pid_dict_yyyymmdd-HHMMSS.json # With only -p flag enabled
+│   └── pid_dict_dd_yyyymmdd-HHMMSS.json # Hierarchical information of deaccessioned/draft datasets.
 ├── csv_files/
 │   └── ds_metadata_yyyymmdd-HHMMSS.csv # with -s flag enabled
 └── logs_files/
     └── log_yyyymmdd-HHMMSS.txt # Exported by default, without specifying --no-log
 ```
+
+## ⚠️Disclaimer
+> [!WARNING]
+> To retrieve data about unpublished datasets or information that is not available publicly (e.g. collaborators/permissions), you will need to have necessary access rights. **Please note that any publication or use of non-publicly available data may require review by a Research Ethics Board**.
 
 ## ✅Tests
 No tests have been written yet. Contributions welcome!
