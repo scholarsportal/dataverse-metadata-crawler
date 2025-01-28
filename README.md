@@ -130,6 +130,10 @@ exported_files/
     └── log_yyyymmdd-HHMMSS.txt # Exported by default, without specifying --no-log
 ```
 
+## ⚠️Disclaimer
+> [!WARNING]
+> To retrieve data about unpublished datasets or information that is not available publicly (e.g. collaborators/permissions), you will need to have necessary access rights. **Please note that any publication or use of non-publicly available data may require review by a Research Ethics Board**.
+
 ## ✅Tests
 No tests have been written yet. Contributions welcome!
 
