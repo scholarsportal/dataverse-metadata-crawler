@@ -63,7 +63,7 @@ class HttpxClient:
         await self.async_client.aclose()
         self.sync_client.close()
 
-    async def _async_semaphore_client(self, url: str) -> httpx.Response | None:
+    async def _async_semaphore_client(self, url: str) -> httpx.Response | list[str]:
         """Asynchronous HTTP client with semaphore.
 
         Args:
@@ -79,9 +79,9 @@ class HttpxClient:
                     # print(f'HTTP request Error for {url}: {response.status_code}')
                     return response
                 return response
-            except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            except (httpx.HTTPStatusError, httpx.RequestError):
                 # print(f'HTTP request Error for {url}: {exc}')
-                return None
+                return [url, 'Error']
 
     def sync_get(self, url: str) -> httpx.Response | None:
         """Synchronous GET request.

@@ -64,15 +64,13 @@ def main(
         False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets'
     ),
 ):
-    """A command line utility that crawls a dataverse repository, extracting metadata for dataverses, datasets, and permissions, and then stores it in JSON format."""
-    # Load the environment variables #! This need to be modified as it nullifies the auth token provided by the user
+    """A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats."""
+    # Load the environment variables
     config: dict = func.load_env()
 
     config['COLLECTION_ALIAS'] = collection_alias
     config['VERSION'] = version
-    config['API_KEY'] = (
-        auth if auth else config['API_KEY']
-    ) # Reassign the API_KEY and replace it specified in the .env file
+    config['API_KEY'] = (auth if auth else config['API_KEY'])  # Reassign the API_KEY and replace it specified in the .env file, if provided in the CLI interface
 
     # Check if -s flag is provided without -d flag
     func.validate_spreadsheet(spreadsheet, dvdfds_matadata)
@@ -101,7 +99,12 @@ def main(
         sys.exit(1)
 
     # Crawl the collection tree metadata
-    collections_tree = metadata_crawler.get_collections_tree(collection_alias).json()
+    response = metadata_crawler.get_collections_tree(collection_alias)
+    if response is None:
+        print('Error: Failed to retrieve collections tree. The API request returned None.')
+        sys.exit(1)
+
+    collections_tree = response.json()
 
     # Add collection id and alias to config
     if collections_tree['status'] == 'OK':
@@ -120,9 +123,10 @@ def main(
 
     async def main_crawler():
         # Initialize empty dict and list to store metadata
-        pid_dict = {'pid': []}
+        ds_dict = {'datasetPersistentId': []}
         failed_metadata_ids = []
         json_file_checksum_dict = []
+        permission_dict = {}
 
         # Flatten the collections tree
         collections_tree_flatten = utils.flatten_collection(collections_tree)
@@ -137,36 +141,26 @@ def main(
         print('Getting basic metadata of datasets in across dataverses (incl. all children)...\n')
         dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(collection_id_list)
 
-        # Add path_ids and path to dataverse_contents from collections_tree_flatten
+        # Add pathIds and path to dataverse_contents from collections_tree_flatten
         dataverse_contents = func.add_path_to_dataverse_contents(dataverse_contents, collections_tree_flatten)
 
-        # Get URIs in collections_tree_flatten and append them to pid_dict, and return empty dataverse to empty_dv
-        empty_dv_dict, pid_dict = func.get_pids(dataverse_contents, config)
+        # Get URIs in collections_tree_flatten and append them to ds_dict, and return empty dataverse to empty_dv
+        empty_dv_dict, ds_dict = func.get_pids(dataverse_contents, config)
 
         # Optional arguments
         meta_dict = {}
         failed_metadata_uris = []
         if dvdfds_matadata:
             # Export dataverse_contents
-            print('\nCrawling Representation and File metadata of datasets...\n')
-            pid_list = list(pid_dict)
+            print('Crawling Representation and File metadata of datasets...\n')
+            pid_list = [item['datasetPersistentId'] for item in ds_dict.values()]
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
-            # Add the path_info to the metadata
-            meta_dict, pid_dict_dd = func.add_path_info(meta_dict, pid_dict)
+            # Replace the key with the Data #TEMPORARY FIX
+            meta_dict = func.replace_key_with_dataset_id(meta_dict)
 
-            # Export the metadata to a JSON file
-            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict')
-            json_file_checksum_dict.append(
-                {
-                    'type': 'Dataset Metadata (Representation & File)',
-                    'path': meta_json_file_path,
-                    'checksum': meta_json_checksum,
-                }
-            )
-            print(
-                f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n'
-            )
+            # Add the path_info to the metadata
+            meta_dict, pid_dict_dd = func.add_path_info(meta_dict, ds_dict)
 
             # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
             pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
@@ -190,34 +184,29 @@ def main(
                     }
                 )
 
-            if spreadsheet:
-                # Export the metadata to a CSV file
-                csv_file_path, csv_file_checksum = Spreadsheet(config).make_csv(meta_dict)
-                json_file_checksum_dict.append(
-                    {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
-                )
-
         if permission:
             print('\nCrawling Permission metadata of datasets...\n')
-            ds_id_list = [item['ds_id'] for item in pid_dict.values()]
+            ds_id_list = [item['datasetId'] for item in ds_dict.values()]
             permission_dict, failed_permission_uris = await (metadata_crawler.get_datasets_permissions(ds_id_list))
-            permission_json_file_path, permission_json_checksum = utils.orjson_export(
-                permission_dict, 'permission_dict'
-            )
-            json_file_checksum_dict.append(
-                {
-                    'type': 'Dataset Metadata (Permission)',
-                    'path': permission_json_file_path,
-                    'checksum': permission_json_checksum,
-                }
-            )
-            print(
-                f'Successfully crawled permission metadata for {utils.count_key(permission_dict)} datasets in total.\n'
-            )
 
-            # Export the pid_dict to a JSON file, if dfdfds_metadata is not provided
-            if not dvdfds_matadata:
-                pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict, 'pid_dict')
+            if not dvdfds_matadata:  # Delay the merging of permission metadata until the representation/file metadata is crawled
+                # Export the permission metadata to a JSON file
+                permission_json_file_path, permission_json_checksum = utils.orjson_export(
+                    permission_dict, 'permission_dict'
+                )
+                json_file_checksum_dict.append(
+                    {
+                        'type': 'Dataset Metadata (Permission)',
+                        'path': permission_json_file_path,
+                        'checksum': permission_json_checksum,
+                    }
+                )
+                print(
+                    f'Successfully crawled permission metadata for {utils.count_key(permission_dict)} datasets in total.\n'
+                )
+
+                # Export the pid_dict to a JSON file, if dfdfds_metadata is not provided
+                pid_dict_json, pid_dict_checksum = utils.orjson_export(ds_dict, 'pid_dict')
                 json_file_checksum_dict.append(
                     {
                         'type': 'Hierarchical Information of Datasets',
@@ -226,10 +215,33 @@ def main(
                     }
                 )
 
+        # Combine the metadata and permission metadata, if both are provided
+        # Else write dummy permission metadata to the metadata
+        meta_dict = func.add_permission_info(meta_dict, permission_dict if isinstance(permission_dict, dict) and permission_dict else None)
+
+        if meta_dict:
+            # Export the metadata to a JSON file
+            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'ds_metadata')
+            json_file_checksum_dict.append(
+                {
+                    'type': 'Dataset Metadata (Representation, File & Permission)',
+                    'path': meta_json_file_path,
+                    'checksum': meta_json_checksum,
+                }
+            )
+            print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
+
         if empty_dv:
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')
             json_file_checksum_dict.append(
                 {'type': 'Empty Dataverses', 'path': empty_dv_json, 'checksum': empty_dv_checksum}
+            )
+
+        if spreadsheet:
+            # Export the metadata to a CSV file
+            csv_file_path, csv_file_checksum = Spreadsheet(config).make_csv_file(meta_dict)
+            json_file_checksum_dict.append(
+                {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
             )
 
         return meta_dict, json_file_checksum_dict, failed_metadata_uris, collections_tree_flatten
@@ -254,6 +266,7 @@ def main(
                      collections_tree_flatten,
                      failed_metadata_uris,
                      json_file_checksum_dict)
+
 
 if __name__ == '__main__':
     app()

@@ -100,8 +100,10 @@ class MetaDataCrawler:
             if item and item.status_code == self.http_success_status and item.json():
                 dataset_persistent_idd = item.json().get('data').get('datasetPersistentId')
                 dataset_meta[dataset_persistent_idd] = item.json()
-            else:
+            elif item and item.status_code != self.http_success_status:
                 failed_dataset_meta[str(item.url)] = item.status_code
+            elif isinstance(item, list):
+                failed_dataset_meta[item[0]] = item[1]
 
         return dataset_meta, failed_dataset_meta
 

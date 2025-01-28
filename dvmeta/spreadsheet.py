@@ -19,6 +19,7 @@ class Spreadsheet:
         self.config = config
         self.search_string = """{
             DatasetTitle: data.metadataBlocks.citation.fields[?typeName==`title`].value|[]
+            DS_Path: path_info.path
             DatasetPersistentId: data.datasetPersistentId,
             ID: data.id,
             DatasetId: data.datasetId,
@@ -27,14 +28,18 @@ class Spreadsheet:
             ReleaseTime: data.releaseTime,
             CreateTime: data.createTime,
             License: data.license.name
-            TermsAccess: data.termsOfAccess
+            TermsOfUse: data.termsOfUse
             RequestAcces: data.fileAccessRequest
+            TermsAccess: data.termsOfAccess
             versionNumber: data.versionNumber,
             versionMinorNumber: data.versionMinorNumber,
             CM_Subtitle: data.metadataBlocks.citation.fields[?typeName==`subtitle`].value|[]
             CM_AltTitle: data.metadataBlocks.citation.fields[?typeName==`alternativeTitle`].value|[]
+            CM_AltURL: data.metadataBlocks.citation.fields[?typeName==`alternativeURL`].value|[]
+            CM_Agency: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdAgency.value
+            CM_ID: data.metadataBlocks.citation.fields[?typeName==`otherId`].value|[*]|[].otherIdValue.value
             CM_Author: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorName.value
-            CM_ContactAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
+            CM_AuthorAff: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorAffiliation.value
             CM_AuthorID: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifier.value
             CM_AuthorIDType: data.metadataBlocks.citation.fields[?typeName==`author`].value|[*]|[].authorIdentifierScheme.value
             CM_ContactName: data.metadataBlocks.citation.fields[?typeName==`datasetContact`].value|[*]|[].datasetContactName.value
@@ -74,8 +79,9 @@ class Spreadsheet:
             CM_Depositor: data.metadataBlocks.citation.fields[?typeName==`depositor`].value|[]
             CM_DepositDate: data.metadataBlocks.citation.fields[?typeName==`dateOfDeposit`].value|[]
             CM_TimeStart: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredStart.value
-            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
-            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
+            CM_TimeEnd: data.metadataBlocks.citation.fields[?typeName==`timePeriodCovered`].value|[].timePeriodCoveredEnd.value
+            CM_CollectionStart: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionStart.value
+            CM_CollectionEnd: data.metadataBlocks.citation.fields[?typeName==`dateOfCollection`].value|[].dateOfCollectionEnd.value
             CM_DataType: data.metadataBlocks.citation.fields[?typeName==`kindOfData`].value|[]
             CM_SeriesName: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesName.value
             CM_SeriesInfo: data.metadataBlocks.citation.fields[?typeName==`series`].value|[].seriesInformation.value
@@ -88,7 +94,14 @@ class Spreadsheet:
             CM_OriginSources: data.metadataBlocks.citation.fields[?typeName==`originOfSources`].value|[]
             CM_CharSources: data.metadataBlocks.citation.fields[?typeName==`characteristicOfSources`].value|[]
             CM_DocSources: data.metadataBlocks.citation.fields[?typeName==`accessToSources`].value|[]
-            DataverseSubCollection: path_info.path
+            DS_Permission: permission_info.data
+            DS_Collab: length(permission_info.data)
+            DS_Admin: length(permission_info.data[?_roleAlias=='admin'])
+            DS_Contrib: length(permission_info.data[?_roleAlias=='contributor'])
+            DS_ContribPlus: length(permission_info.data[?_roleAlias=='fullContributor'])
+            DS_Curator: length(permission_info.data[?_roleAlias=='curator'])
+            DS_FileDown: length(permission_info.data[?_roleAlias=='fileDownloader'])
+            DS_Member: length(permission_info.data[?_roleAlias=='member'])
             }"""  # noqa: E501
         self.csv_file_dir = DirManager().csv_files_dir()
         self.spreadsheet_order_file_path = Path(DirManager().res_dir) / 'spreadsheet_order.csv'
@@ -177,7 +190,7 @@ class Spreadsheet:
         return result_dict
 
     @staticmethod
-    def _get_metadata_blocks(dictionary: dict) -> dict:
+    def _get_metadata_blocks_usage(dictionary: dict) -> dict:
         metadata_block_dict = {
             'Meta_Geo': 'geospatial',
             'Meta_SSHM': 'socialscience',
@@ -193,6 +206,51 @@ class Spreadsheet:
             result_dict[key] = value in dictionary
 
         return result_dict
+
+    @staticmethod
+    def _get_datafile_meta_usage(dictionary: dict) -> dict:
+        # Get the use of data file directoryLabel (DF_Hierarchy),
+        # tags (categories; DF_Tags) & description (DF_Description).
+        if dictionary.get('data', {}).get('files'):
+            file_nested_list = jmespath.search('data.files[*]', dictionary)
+
+            # Get the count of directoryLabel if it is not None
+            directorylabel_count = len([file for file in file_nested_list if file.get('directoryLabel') is not None])
+
+            # Get the count of categories if it is not None
+            categories_count = len([
+                file for file in file_nested_list
+                if file.get('dataFile', {}).get('categories') is not None
+            ])
+
+            # Get the count of description if it is not None
+            description_count = len([
+                file for file in file_nested_list
+                if file.get('dataFile', {}).get('description') is not None
+            ])
+
+            return {'DF_Hierarchy': directorylabel_count,
+                    'DF_Tags': categories_count,
+                    'DF_Description': description_count}
+        return {'DF_Hierarchy': 0, 'DF_Tags': 0, 'DF_Description': 0}
+
+    @staticmethod
+    def _parse_permission_values(dictionary: dict) -> dict | None:
+        """Parse the NA value to permission_info.data, if the value is not available."""
+        if dictionary.get('permission_info', {}).get('status', {}) == 'NA':
+            # If the status is NA, set the DS_Permission, DS_Collab, DS_Admin, DS_Contrib
+            # DS_ContribPlus, DS_Curator, DS_FileDown, DS_Member to NA
+            return {
+                'DS_Permission': False,
+                'DS_Collab': 'NA',
+                'DS_Admin': 'NA',
+                'DS_Contrib': 'NA',
+                'DS_ContribPlus': 'NA',
+                'DS_Curator': 'NA',
+                'DS_FileDown': 'NA',
+                'DS_Member': 'NA'
+            }
+        return {'DS_Permission': True}
 
     def _get_spreadsheet_order(self) -> list[str]:
         with Path(self.spreadsheet_order_file_path).open(encoding='utf-8') as file:
@@ -212,18 +270,23 @@ class Spreadsheet:
 
         return df[final_column_order]
 
-    def make_csv(self, meta_dict: dict) -> tuple[str, str]:
-        """Create a CSV file from the metadata dictionary.
+    def _make_cm_meta_holding_list(self, meta_dict: dict) -> list[dict]:
+        """Create a nested list of metadata dictionaries.
 
         Args:
-            meta_dict (dict): Metadata dictionary
+            meta_dict (dict): Dataset metadata dictionary.
 
         Returns:
-            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+            list[dict]: List of metadata dictionaries (nested)
         """
         holding_list = []
         for key, _value in meta_dict.items():
             jmespath_dict: dict = jmespath.search(f'{self.search_string}', meta_dict[key])
+
+            # Get the use of data file hierarchy (folders, DF_Hierarchy),
+            # file tags (categories; DF_Tags) &  description (DF_Description)
+            jmespath_dict.update(self._get_datafile_meta_usage(meta_dict[key]))
+
             # Get the file size and count
             jmespath_dict['FileSize'] = self._get_data_files_size(meta_dict[key])
             jmespath_dict['FileSize_normalized'] = convert_size(jmespath_dict['FileSize'])
@@ -245,20 +308,38 @@ class Spreadsheet:
             jmespath_dict.update(self._get_dataset_subjects(jmespath_dict))
 
             # Get the metadata blocks and add them to the result dictionary
-            jmespath_dict.update(self._get_metadata_blocks(jmespath_dict))
+            jmespath_dict.update(self._get_metadata_blocks_usage(jmespath_dict))
 
             # Drop the versionNumber and versionMinorNumber keys from the dictionary
             jmespath_dict.pop('versionNumber', None)
             jmespath_dict.pop('versionMinorNumber', None)
+
+            # Update the permission info if the status is NA
+            jmespath_dict.update(self._parse_permission_values(meta_dict[key]) or {})
 
             # Last step: Turn the lists in the dictionary into strings
             jmespath_dict = {key: list_to_string(value) if isinstance(value, list) else value for key, value in jmespath_dict.items()}
 
             holding_list.append(jmespath_dict)
 
-        df = pd.DataFrame(holding_list)
+        return holding_list
 
-        # Reoder the columns in the DataFrame
+    def make_csv_file(self, meta_dict: dict) -> tuple[str, str]:
+        """Create a CSV file from the nested metadata list.
+
+        Args:
+            meta_dict (dict): Dataset metadata dictionary
+
+        Returns:
+            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+        """
+        # Create a DataFrame from the nested list
+
+        cm_meta_holding_list = self._make_cm_meta_holding_list(meta_dict)
+
+        df = pd.DataFrame(cm_meta_holding_list)
+
+        # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
         df = self._reoder_df_columns(df)
 
         # Create the CSV file
