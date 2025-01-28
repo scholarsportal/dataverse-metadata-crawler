@@ -1,7 +1,6 @@
 name: Poetry export requirements.txt
 on:
-
-  pull_request:
+  pull_request_target:
     branches:
       - 'main'  # Trigger only on pull requests made to the main branch
 
