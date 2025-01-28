@@ -221,7 +221,7 @@ def main(
 
         if meta_dict:
             # Export the metadata to a JSON file
-            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'meta_dict_with_permission')
+            meta_json_file_path, meta_json_checksum = utils.orjson_export(meta_dict, 'ds_metadata')
             json_file_checksum_dict.append(
                 {
                     'type': 'Dataset Metadata (Representation, File & Permission)',
