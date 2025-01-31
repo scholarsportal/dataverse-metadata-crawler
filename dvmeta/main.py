@@ -79,9 +79,6 @@ def main(
     start_time_obj, start_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
     print(f'Start time: {start_time_display}\n')
 
-    # Load the crawler
-    metadata_crawler = MetaDataCrawler(config)
-
     # Check if either dvdfds_matadata or permission is provided
     if not dvdfds_matadata and not permission:
         print(
@@ -90,13 +87,22 @@ def main(
         sys.exit(1)
 
     # Check if the authentication token is provided if the permission metadata is requested to be crawled
-    if permission and config.get('API_KEY') is None:
-        print('Error: Crawling permission metadata requires API Token. Please provide the API Token.\nExiting...')
+    if permission and config.get('API_KEY') is None or config.get('API_KEY') == 'None':
+        print('Error: Crawling permission metadata requires API Token. Please provide the API Token.Exiting...')
         sys.exit(1)
 
     # Check the connection to the dataverse repository
-    if not func.check_connection(config):
+    connection_status, auth_status = func.check_connection(config)
+    if not connection_status:
         sys.exit(1)
+    if not auth_status:
+        config['API_KEY'] = None
+        if permission:
+            print('[WARNING]: Crawling permission metadata requires valid API Token. The script will skip crawling permission metadata\n')
+            permission = False
+
+    # Initialize the crawler
+    metadata_crawler = MetaDataCrawler(config)
 
     # Crawl the collection tree metadata
     response = metadata_crawler.get_collections_tree(collection_alias)

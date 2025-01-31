@@ -21,7 +21,7 @@ class MetaDataCrawler:
 
     def __init__(self, config: dict) -> None:
         """Initialize the class with the configuration settings."""
-        self.config = config
+        self.config = self._define_headers(config)
         self.url_tree = f"{config['BASE_URL']}/api/info/metrics/tree?parentAlias={config['COLLECTION_ALIAS']}"
         self.http_success_status = 200
         self.url_dataverse = f"{config['BASE_URL']}/api/dataverses"
@@ -30,7 +30,27 @@ class MetaDataCrawler:
         self.write_dict = {}
         self.failed_dict = []
         self.url = None
-        self.client = HttpxClient(config)
+        self.client = HttpxClient(self.config)
+
+    @staticmethod
+    def _define_headers(config: dict) -> dict[str, str]:
+        """Define the headers for the HTTP request.
+
+        Args:
+            config (dict): Configuration dictionary
+
+        Returns:
+            dict[str, str]: Dictionary containing the headers
+        """
+        headers = {'Accept': 'application/json'}
+
+        api_key = config.get('API_KEY')
+        if api_key and str(api_key).lower() != 'none':
+            headers['X-Dataverse-key'] = api_key
+
+        config['HEADERS'] = headers
+
+        return config
 
     def _get_dataset_content_url(self, identifier: str) -> str:
         return f"{self.config['BASE_URL']}/api/datasets/:persistentId/versions/:{self.config['VERSION']}?persistentId={identifier}"  # noqa: E501
