@@ -2,6 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
 [![Dataverse](https://img.shields.io/badge/Dataverse-FFA500?)](https://dataverse.org/)
 [![Code Style: Black](https://img.shields.io/badge/code_style-black-black?)](https://github.com/psf/black)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fexample.ipynb)
 
 # Dataverse Metadata Crawler
 ![Screencapture of the CLI tool](res/screenshot.png)
@@ -13,12 +14,17 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
 1. Bulk metadata extraction from Dataverse repositories at any chosen level of collection (top level or selected collection)
 2. JSON & CSV file export options
 
-## 📦Prerequisites
-1. Git
-2. Python 3.10+
+## ☁️ Installation (Cloud - Slower)
+Click 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fexample.ipynb) 
+to launch the crawler directly in your web browser—no Git or Python installation required!
 
-## ⚙️Installation
+## ⚙️Installation (Locally - Better performance)
 
+### 📦Prerequisites
+1. [Git](https://git-scm.com/)
+2. [Python 3.10+](https://www.python.org/)
+---
 1. Clone the repository
    ```sh
    git clone https://github.com/scholarsportal/dataverse-metadata-crawler.git
@@ -87,7 +93,7 @@ python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALI
 | --permission         | -p        |          | Output a JSON file that stores permission metadata for all Datasets in the repository.                                                                                                                                                                                                     |                           |
 | --emptydv            | -e        |          | Output a JSON file that stores all Dataverses which do **not** contain Datasets (though they might have child Dataverses which have Datasets).                                                                                                                                             |                           |
 | --failed             | -f        |          | Output a JSON file of Dataverses/Datasets that failed to be crawled.                                                                                                                                                                                                                       |                           |
-| --spreadsheet        | -s        |          | Output a CSV file of the metadata of Datasets.                                                                                                                                                                                                                                             |                           |
+| --spreadsheet        | -s        |          | Output a CSV file of the metadata of Datasets. <br/> You may find the spreadsheet column explanation [here](https://github.com/scholarsportal/dataverse-metadata-crawler/wiki/Explanation-of--Spreadsheet-Column-Headers).                                                                                                                                                                                                                                             |                           |
 | --help               |           |          | Show the help message.                                                                                                                                                                                                                                                                |                           |
 
 ### Examples
@@ -157,7 +163,7 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.1) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.2) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
@@ -167,7 +173,7 @@ BibTeX:
   month = {jan},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-  version = {0.1.1},
+  version = {0.1.2},
   year = {2025}
 }
 ```

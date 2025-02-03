@@ -38,7 +38,8 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          if [[ -n "$(git status --porcelain requirements.txt poetry.lock)" ]]; then
+          # Use git diff to check actual content changes
+          if ! git diff --quiet requirements.txt poetry.lock; then
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "changes=false" >> $GITHUB_OUTPUT
