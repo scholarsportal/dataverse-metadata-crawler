@@ -55,12 +55,18 @@ jobs:
       - name: Commit and push if changed
         if: steps.check_changes.outputs.changes == 'true'
         run: |
+          # Stage all changes before pulling
+          git add requirements.txt poetry.lock
+
+          # Check if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update requirements.txt and poetry.lock [skip ci]"
+          fi
+          
           # Pull with rebase to get latest changes
           git pull --rebase origin ${{ env.BRANCH_NAME }}
-          
-          # Stage and commit changes
-          git add requirements.txt poetry.lock
-          git commit -m "chore: update requirements.txt and poetry.lock [skip ci]"
           
           # Push with retry logic
           max_attempts=3
