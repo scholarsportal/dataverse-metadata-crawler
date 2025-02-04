@@ -35,11 +35,15 @@ jobs:
       - name: Get branch name
         shell: bash
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Fetch main branch
+        shell: bash
+        run: git fetch origin main
       - name: Check for changes
         id: check_changes
+        shell: bash
         run: |
-          # Use git diff to check actual content changes
-          if ! git diff --quiet requirements.txt poetry.lock; then
+          # Use git diff to check actual content changes with the remotte
+          if ! git diff origin/main --quiet -- requirements.txt poetry.lock; then
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "changes=false" >> $GITHUB_OUTPUT
