@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dataverse-metadata-crawler"
-version = "0.1.2"
+version = "0.1.3"
 description = "A Python CLI tool for bulk extracting and exporting metadata from Dataverse repositories' collections to JSON and CSV formats."
 authors = ["Ken Lui <kenlh.lui@utoronto.ca>"]
 license = "MIT"

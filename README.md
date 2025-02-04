@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
 [![Dataverse](https://img.shields.io/badge/Dataverse-FFA500?)](https://dataverse.org/)
 [![Code Style: Black](https://img.shields.io/badge/code_style-black-black?)](https://github.com/psf/black)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fexample.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fcloud_cli.ipynb)
 
 # Dataverse Metadata Crawler
 ![Screencapture of the CLI tool](res/screenshot.png)
@@ -16,7 +16,7 @@ A Python CLI tool for extracting and exporting metadata from [Dataverse](https:/
 
 ## ☁️ Installation (Cloud - Slower)
 Click 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fexample.ipynb) 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fcloud_cli.ipynb)
 to launch the crawler directly in your web browser—no Git or Python installation required!
 
 ## ⚙️Installation (Locally - Better performance)
@@ -163,7 +163,7 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.2) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.3) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
@@ -173,7 +173,7 @@ BibTeX:
   month = {jan},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-  version = {0.1.2},
+  version = {0.1.3},
   year = {2025}
 }
 ```
