@@ -14,14 +14,11 @@ orjson = "^3.10.14"
 asyncio = "^3.4.3"
 jmespath = "^1.0.1"
 typer = "^0.13.1"
-rich-argparse = "^1.6.0"
 jinja2 = "^3.1.4"
 ipykernel = "^6.29.5"
 pandas = "^2.2.3"
 python-dotenv = "^1.0.1"
-pydataverse = "^0.3.4"
 numpy = "^2.2.1"
-json2 = "^0.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
