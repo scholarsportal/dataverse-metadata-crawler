@@ -274,8 +274,8 @@ def main(
                      elapsed_time,
                      meta_dict,
                      collections_tree_flatten,
-                     pid_dict_dd,
                      failed_metadata_uris,
+                     pid_dict_dd,
                      json_file_checksum_dict)
 
 
