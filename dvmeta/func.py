@@ -245,3 +245,24 @@ def replace_key_with_dataset_id(dictionary: dict) -> dict:
             # Keep the original key if 'id' is missing
             new_dict[old_key] = value
     return new_dict
+
+
+def rm_dd_from_failed_uris(failed_uris: dict, pid_dict_dd: dict) -> dict:
+    """Remove the deaccessioned datasets from the failed_uris dictionary.
+
+    Args:
+        failed_uris (dict): Dictionary containing the failed URIs
+        pid_dict_dd (dict): Dictionary containing the deaccessioned datasets metadata
+
+    Returns:
+        dict: Dictionary containing the failed URIs without the deaccessioned datasets
+    """
+    # Get the datasetPersistentId from the pid_dict_dd
+    dd_pids = [v['datasetPersistentId'] for v in pid_dict_dd.values()]
+
+    # Loop through the dd_pids, and remove the item if it contains the pid in the key of the failed_uris
+    keys_to_remove = [k for k in failed_uris if any(pid in k for pid in dd_pids)]
+    for k in keys_to_remove:
+        failed_uris.pop(k)
+
+    return failed_uris
