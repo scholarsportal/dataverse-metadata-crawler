@@ -22,10 +22,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Skip job if the push is made by github-actions[bot]
-  if: ${{ github.actor != 'github-actions[bot]' }}
   # Build job
   build:
+    # Skip job if the push is made by github-actions[bot]
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
