@@ -169,6 +169,9 @@ def main(
             # Add the path_info to the metadata
             meta_dict, pid_dict_dd = func.add_path_info(meta_dict, ds_dict)
 
+            # Remove the deaccessioned/draft datasets from the pid_dict_dd for the failed_metadata_uris
+            failed_metadata_uris = func.rm_dd_from_failed_uris(failed_metadata_uris, pid_dict_dd)
+
             # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
             pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
             json_file_checksum_dict.append(
