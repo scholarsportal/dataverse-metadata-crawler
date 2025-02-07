@@ -53,7 +53,7 @@ def write_to_log(  # noqa:  PLR0913
     with Path(log_file_path).open('w', encoding='utf-8') as file:
         file.write(rendered)
 
-    return print(f'The crawl log is saved at: {log_file_path}')
+    return print(f'The crawl log is saved at: {log_file_path}\n')
 
 
 def read_template() -> str:

@@ -278,6 +278,7 @@ def main(
                      pid_dict_dd,
                      json_file_checksum_dict)
 
+    print('✅ Crawling process completed successfully.\n')
 
 if __name__ == '__main__':
     app()
