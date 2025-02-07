@@ -163,7 +163,7 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.3) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.4) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
@@ -173,7 +173,7 @@ BibTeX:
   month = {jan},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-  version = {0.1.3},
+  version = {0.1.4},
   year = {2025}
 }
 ```
