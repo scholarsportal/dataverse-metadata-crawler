@@ -156,6 +156,7 @@ def main(
         # Optional arguments
         meta_dict = {}
         failed_metadata_uris = []
+        pid_dict_dd = {}
         if dvdfds_matadata:
             # Export dataverse_contents
             print('Crawling Representation and File metadata of datasets...\n')
@@ -250,9 +251,9 @@ def main(
                 {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
             )
 
-        return meta_dict, json_file_checksum_dict, failed_metadata_uris, collections_tree_flatten
+        return meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten
 
-    meta_dict, json_file_checksum_dict, failed_metadata_uris, collections_tree_flatten = asyncio.run(main_crawler())
+    meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 
     # End time
     end_time_obj, end_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
@@ -270,6 +271,7 @@ def main(
                      elapsed_time,
                      meta_dict,
                      collections_tree_flatten,
+                     pid_dict_dd,
                      failed_metadata_uris,
                      json_file_checksum_dict)
 
