@@ -11,7 +11,7 @@ Execution time: {{ elapsed_time }}
 
 Total number of dataset crawled from the collection: {{ meta_dict }}
 Number of dataverses (at all levels/depths) crawled from the collection: {{ collections_tree_flatten }}
-Number of deaccessioned/draft datasets detected (include draft if chose latest-published option  but the dataset never published): {{ pid_dict_dd }}
+Number of deaccessioned/draft datasets detected (include draft if chose latest-published option but the dataset never published): {{ pid_dict_dd }}
 Number of datasets failed to be crawled: {{ failed_metadata_ids }}
 
 Total number of files in the collection: {{ file_num }}
