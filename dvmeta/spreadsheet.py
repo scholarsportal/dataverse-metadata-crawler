@@ -29,7 +29,7 @@ class Spreadsheet:
             CreateTime: data.createTime,
             License: data.license.name
             TermsOfUse: data.termsOfUse
-            RequestAcces: data.fileAccessRequest
+            RequestAccess: data.fileAccessRequest
             TermsAccess: data.termsOfAccess
             versionNumber: data.versionNumber,
             versionMinorNumber: data.versionMinorNumber,
@@ -61,7 +61,7 @@ class Spreadsheet:
             CM_Lang: data.metadataBlocks.citation.fields[?typeName==`language`].value|[]
             CM_ProdName: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerName.value
             CM_ProdAff: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerAffiliation.value
-            CM_ProdAbrev: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerAbbreviation.value
+            CM_ProdAbbrev: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerAbbreviation.value
             CM_ProdURL: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerURL.value
             CM_ProdLogo: data.metadataBlocks.citation.fields[?typeName==`producer`].value|[].producerLogoURL.value
             CM_ProdDate: data.metadataBlocks.citation.fields[?typeName==`productionDate`].value|[]
