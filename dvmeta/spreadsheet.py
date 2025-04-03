@@ -158,7 +158,7 @@ class Spreadsheet:
 
     @staticmethod
     def _get_dataset_subjects(dictionary: dict) -> dict:
-        subject_list = dictionary.get('CM_subject')
+        subject_list = dictionary.get('CM_Subject')
         subject_dict = {
             'CM_Subject_Agri': 'Agricultural Sciences',
             'CM_Subject_AH': 'Arts and Humanities',
