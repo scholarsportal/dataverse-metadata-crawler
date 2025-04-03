@@ -115,7 +115,7 @@ python3 dvmeta/main.py -c demo -v 1.0 -d -s -p -a xxxxxxxx-xxxx-xxxx-xxxx-xxxxxx
 | ds_metadata_yyyymmdd-HHMMSS.json          | Datasets representation & data files metadata in JSON format.                                                                                    |
 | empty_dv_yyyymmdd-HHMMSS.json             | The id of empty dataverse(s) in list format.                                                                                            |
 | failed_metadata_uris_yyyymmdd-HHMMSS.json | The URIs (URL) of datasets failed to be downloaded.                                                                                     |
-| permission_dict_yyyymmdd-HHMMSS.json      | The perission metadata of datasets with their dataset id.                                                                               |
+| permission_dict_yyyymmdd-HHMMSS.json      | The permission metadata of datasets with their dataset id.                                                                               |
 | pid_dict_yyyymmdd-HHMMSS.json             | Datasets' basic info with hierarchical information dictionary.Only exported if -p (permission) flag is used without -d (metadata) flag. |
 | pid_dict_dd_yyyymmdd-HHMMSS.json          | The Hierarchical information of deaccessioned/draft datasets.                                                                           |
 | ds_metadata_yyyymmdd-HHMMSS.csv           | Datasets and their data files' metadata in CSV format.                                                                                     |
@@ -144,7 +144,7 @@ exported_files/
 No tests have been written yet. Contributions welcome!
 
 ## 💻Development
-1. Dependencies managment: [poetry](https://python-poetry.org/) - Use `poetry` to manage dependencies and reflect changes in the `pyproject.toml` file.
+1. Dependencies management: [poetry](https://python-poetry.org/) - Use `poetry` to manage dependencies and reflect changes in the `pyproject.toml` file.
 2. Linter: [ruff](https://docs.astral.sh/ruff/) - Follow the linting rules outlined in the `pyproject.toml` file.
 
 ## 🙌Contributing
@@ -163,7 +163,7 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.4) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.5) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
@@ -173,7 +173,7 @@ BibTeX:
   month = {jan},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-  version = {0.1.4},
+  version = {0.1.5},
   year = {2025}
 }
 ```
