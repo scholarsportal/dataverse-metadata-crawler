@@ -170,7 +170,7 @@ BibTeX:
 ```
 @software{Lui_Dataverse_Metadata_Crawler_2025,
   author = {Lui, Lok Hei},
-  month = {jan},
+  month = {Apr},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
   version = {0.1.5},
