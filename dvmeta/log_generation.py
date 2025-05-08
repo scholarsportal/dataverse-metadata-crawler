@@ -5,7 +5,10 @@ import utils
 from dirmanager import DirManager
 from func import count_files_size
 from jinja2 import Template
+from custom_logging import CustomLogger
 
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 def write_to_log(  # noqa:  PLR0913
     config: dict,
@@ -53,7 +56,7 @@ def write_to_log(  # noqa:  PLR0913
     with Path(log_file_path).open('w', encoding='utf-8') as file:
         file.write(rendered)
 
-    return print(f'The crawl log is saved at: {log_file_path}\n')
+    return logger.print(f'The crawl log is saved at: {log_file_path}')
 
 
 def read_template() -> str:

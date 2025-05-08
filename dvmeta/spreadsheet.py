@@ -4,11 +4,16 @@ from pathlib import Path
 
 import jmespath
 import pandas as pd
+from custom_logging import CustomLogger
 from dirmanager import DirManager
 from utils import Timestamp
 from utils import convert_size
 from utils import gen_checksum
 from utils import list_to_string
+
+
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 
 class Spreadsheet:
@@ -350,7 +355,7 @@ class Spreadsheet:
         # Generate a checksum for the CSV file
         checksum = gen_checksum(csv_file_path)
 
-        print(f'\n[INFO] Exported Dataset Metadata CSV: {csv_file_path}'
-              f'\n[INFO] Checksum (SHA-256): {checksum}\n')
+        logger.print(f'Exported Dataset Metadata CSV: {csv_file_path}'
+              f'\nChecksum (SHA-256): {checksum}')
 
         return csv_file_path, checksum
