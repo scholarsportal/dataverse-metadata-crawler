@@ -88,11 +88,11 @@ def check_connection(config: dict) -> tuple[bool, bool]:
             if response and response.status_code == httpx_client.httpx_success_status:
                 logger.print(f'Unauthenticated connection to the dataverse repository {config["BASE_URL"]} is successful. The script continue crawling.\n')  # noqa: E501
                 return True, False
-            logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}.\nExiting...\n')  # noqa: E501
+            logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}.\nExiting...')  # noqa: E501
             return False, False
 
     except httpx.HTTPStatusError as e:
-        logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}\n')  # noqa: E501
+        logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}')  # noqa: E501
         return False, False
 
 

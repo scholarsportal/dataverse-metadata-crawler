@@ -6,14 +6,18 @@ import func
 import typer
 import utils
 from custom_logging import CustomLogger
+from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
 from spreadsheet import Spreadsheet
 from typing_extensions import Annotated
 
 
+# Initialize the directory manager
+dir_manager = DirManager()
+
 # Initialize the custom logger in the cli
-CustomLogger.setup_logging()
+CustomLogger.setup_logging(DirManager().log_files_dir())
 logger = CustomLogger.get_logger(__name__)
 
 app = typer.Typer()
