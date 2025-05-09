@@ -12,15 +12,8 @@ from metadatacrawler import MetaDataCrawler
 from spreadsheet import Spreadsheet
 from typing_extensions import Annotated
 
-
-# Initialize the directory manager
-dir_manager = DirManager()
-
-# Initialize the custom logger in the cli
-CustomLogger.setup_logging(DirManager().log_files_dir())
-logger = CustomLogger.get_logger(__name__)
-
 app = typer.Typer()
+
 
 @app.command()
 def main(
@@ -70,10 +63,16 @@ def main(
         False, '--failed', '-f', help='Output JSON file that stores dataverses/datasets failed to be crawled'
     ),
     spreadsheet: bool = typer.Option(
-        False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets'
+        False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets',
     ),
-):
+    debug_log: bool = typer.Option(
+        False, '--debug-log', '-debug',
+        help='Enable debug logging. This will create a debug log file in the log_files directory.')):
     """A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats."""
+    # Initialize the custom logger in the cli
+    CustomLogger.setup_logging(DirManager().log_files_dir()) if debug_log else CustomLogger.setup_logging()
+    logger = CustomLogger.get_logger(__name__)
+
     # Load the environment variables
     config: dict = func.load_env()
 
