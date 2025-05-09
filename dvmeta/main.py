@@ -5,13 +5,15 @@ import sys
 import func
 import typer
 import utils
+from custom_logging import CustomLogger
+from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
 from spreadsheet import Spreadsheet
 from typing_extensions import Annotated
 
-
 app = typer.Typer()
+
 
 @app.command()
 def main(
@@ -61,10 +63,16 @@ def main(
         False, '--failed', '-f', help='Output JSON file that stores dataverses/datasets failed to be crawled'
     ),
     spreadsheet: bool = typer.Option(
-        False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets'
+        False, '--spreadsheet', '-s', help='Output a CSV file of the metadata of datasets',
     ),
-):
+    debug_log: bool = typer.Option(
+        False, '--debug-log', '-debug',
+        help='Enable debug logging. This will create a debug log file in the log_files directory.')):
     """A Python CLI tool for extracting and exporting metadata from Dataverse repositories to JSON and CSV formats."""
+    # Initialize the custom logger in the cli
+    CustomLogger.setup_logging(DirManager().log_files_dir()) if debug_log else CustomLogger.setup_logging()
+    logger = CustomLogger.get_logger(__name__)
+
     # Load the environment variables
     config: dict = func.load_env()
 
@@ -77,18 +85,18 @@ def main(
 
     # Start time
     start_time_obj, start_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
-    print(f'Start time: {start_time_display}\n')
+    logger.print(f'Start time: {start_time_display}')
 
     # Check if either dvdfds_matadata or permission is provided
     if not dvdfds_matadata and not permission:
-        print(
+        logger.error(
             'Please provide the type of metadata to crawl. Use -d or/and -p flag for crawling metadata of datasets or permission metadata, respectively.'
         )
         sys.exit(1)
 
     # Check if the authentication token is provided if the permission metadata is requested to be crawled
     if permission and config.get('API_KEY') is None or config.get('API_KEY') == 'None':
-        print('Error: Crawling permission metadata requires API Token. Please provide the API Token.Exiting...')
+        logger.error('Crawling permission metadata requires API Token. Please provide the API Token.Exiting...')
         sys.exit(1)
 
     # Check the connection to the dataverse repository
@@ -98,7 +106,7 @@ def main(
     if not auth_status:
         config['API_KEY'] = None
         if permission:
-            print('[WARNING]: Crawling permission metadata requires valid API Token. The script will skip crawling permission metadata\n')
+            logger.warning('Crawling permission metadata requires valid API Token. The script will skip crawling permission metadata')
             permission = False
 
     # Initialize the crawler
@@ -107,7 +115,7 @@ def main(
     # Crawl the collection tree metadata
     response = metadata_crawler.get_collections_tree(collection_alias)
     if response is None:
-        print('Error: Failed to retrieve collections tree. The API request returned None.')
+        logger.error('Failed to retrieve collections tree. The API request returned None.')
         sys.exit(1)
 
     collections_tree = response.json()
@@ -121,11 +129,11 @@ def main(
         )
 
     else:
-        print(f"Collection alias '{collection_alias}' is not found in the repository. Exiting...")
+        logger.error(f"Collection alias '{collection_alias}' is not found in the repository. Exiting...")
         sys.exit(1)
 
     # Start the main function
-    print('Starting the main crawling function...\n')
+    logger.print('Starting the main crawling function...')
 
     async def main_crawler():
         # Initialize empty dict and list to store metadata
@@ -136,7 +144,7 @@ def main(
 
         # Flatten the collections tree
         collections_tree_flatten = utils.flatten_collection(collections_tree)
-        print('Flattened the collections tree...\n')
+        logger.print('Flattened the collections tree...')
 
         # Add collection id to collection_id_list
         collection_id_list = [item['id'] for item in collections_tree_flatten.values()]
@@ -144,7 +152,7 @@ def main(
         # Add root collection id to collection_id_list
         collection_id_list.append(config['COLLECTION_ID'])
 
-        print('Getting basic metadata of datasets in across dataverses (incl. all children)...\n')
+        logger.print('Getting basic metadata of datasets in across dataverses (incl. all children)...')
         dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(collection_id_list)
 
         # Add pathIds and path to dataverse_contents from collections_tree_flatten
@@ -159,7 +167,7 @@ def main(
         pid_dict_dd = {}
         if dvdfds_matadata:
             # Export dataverse_contents
-            print('Crawling Representation and File metadata of datasets...\n')
+            logger.print('Crawling Representation and File metadata of datasets...')
             pid_list = [item['datasetPersistentId'] for item in ds_dict.values()]
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
@@ -195,7 +203,7 @@ def main(
                 )
 
         if permission:
-            print('\nCrawling Permission metadata of datasets...\n')
+            logger.print('Crawling Permission metadata of datasets...')
             ds_id_list = [item['datasetId'] for item in ds_dict.values()]
             permission_dict, failed_permission_uris = await (metadata_crawler.get_datasets_permissions(ds_id_list))
 
@@ -211,8 +219,8 @@ def main(
                         'checksum': permission_json_checksum,
                     }
                 )
-                print(
-                    f'Successfully crawled permission metadata for {utils.count_key(permission_dict)} datasets in total.\n'
+                logger.print(
+                    f'Successfully crawled permission metadata for {utils.count_key(permission_dict)} datasets in total.'
                 )
 
                 # Export the pid_dict to a JSON file, if dfdfds_metadata is not provided
@@ -239,7 +247,7 @@ def main(
                     'checksum': meta_json_checksum,
                 }
             )
-            print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.\n')
+            logger.print(f'Successfully crawled {utils.count_key(meta_dict)} metadata of dataset representation and file in total.')
 
         if empty_dv:
             empty_dv_json, empty_dv_checksum = utils.orjson_export(empty_dv_dict, 'empty_dv')
@@ -260,11 +268,11 @@ def main(
 
     # End time
     end_time_obj, end_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
-    print(f'End time: {end_time_display}\n')
+    logger.print(f'End time: {end_time_display}')
 
     # Print the elapsed time for the crawling process
     elapsed_time = end_time_obj - start_time_obj
-    print(f'Elapsed time: {elapsed_time}\n')
+    logger.print(f'Elapsed time: {elapsed_time}')
 
     if log:
         # Write to log
@@ -278,7 +286,7 @@ def main(
                      pid_dict_dd,
                      json_file_checksum_dict)
 
-    print('✅ Crawling process completed successfully.\n')
+    logger.print('✅ Crawling process completed successfully.')
 
 if __name__ == '__main__':
     app()

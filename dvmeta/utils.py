@@ -5,7 +5,12 @@ from hashlib import sha256
 from pathlib import Path
 
 import orjson
+from custom_logging import CustomLogger
 from dirmanager import DirManager
+
+
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 
 class Timestamp:
@@ -130,11 +135,11 @@ def orjson_export(data_dict: dict, file_name: str) -> tuple:
         with Path(json_file_path).open('wb') as file:  # Open file in binary write mode
             file.write(orjson.dumps(data_dict, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS))
         checksum = gen_checksum(json_file_path)
-        print(f'\n[INFO] Exported {file_name} to json file: {json_file_path}'
-              f'\n[INFO] Checksum (SHA-256): {checksum}\n')
+        logger.print(f'Exported {file_name} to json file: {json_file_path}'
+              f'\nChecksum (SHA-256): {checksum}')
 
         return json_file_path, checksum
-    print(f'\n[INFO] {file_name} is empty, no json file is created.')
+    logger.print(f'{file_name} is empty, no json file is created.')
 
     return None, None
 
