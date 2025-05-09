@@ -5,12 +5,14 @@ import sys
 import func
 import typer
 import utils
+from cli_validation import validate_spreadsheet_option, validate_version_type
 from custom_logging import CustomLogger
 from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
 from spreadsheet import Spreadsheet
 from typing_extensions import Annotated
+
 
 app = typer.Typer()
 
@@ -51,7 +53,7 @@ def main(
             "  'x' - same as 'x.0'"
         ),
         prompt_required=True,
-        callback=func.version_type,
+        callback=validate_version_type,
     ),
     empty_dv: bool = typer.Option(
         False,
@@ -74,14 +76,14 @@ def main(
     logger = CustomLogger.get_logger(__name__)
 
     # Load the environment variables
-    config: dict = func.load_env()
+    config: dict = utils.load_env()
 
     config['COLLECTION_ALIAS'] = collection_alias
     config['VERSION'] = version
     config['API_KEY'] = (auth if auth else config['API_KEY'])  # Reassign the API_KEY and replace it specified in the .env file, if provided in the CLI interface
 
     # Check if -s flag is provided without -d flag
-    func.validate_spreadsheet(spreadsheet, dvdfds_matadata)
+    validate_spreadsheet_option(spreadsheet, dvdfds_matadata)
 
     # Start time
     start_time_obj, start_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()

@@ -1,5 +1,6 @@
 """This module contains utility functions for the dvmeta package."""
 import math
+import os
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import orjson
 from custom_logging import CustomLogger
 from dirmanager import DirManager
+from dotenv import load_dotenv
 
 
 # Initialize the logger
@@ -184,3 +186,24 @@ def flatten_collection(readdict, path_name='', path_ids=[]):
     if 'children' not in dictionary_data or not dictionary_data['children']:
         return {}
     return loop_item(dictionary_data, path_name, path_ids)
+
+
+def load_env() -> dict:
+    """Load the environment variables.
+
+    Returns:
+        dict: A dictionary containing the environment variables
+    """
+    # Load the environment variables
+    load_dotenv()
+
+    config = {
+        'API_KEY': os.getenv('API_KEY', None),
+        'BASE_URL': os.getenv('BASE_URL'),
+        'TIMEOUT': None,
+    }
+    if config['API_KEY']:
+        config['HEADERS'] = {'X-Dataverse-key': config['API_KEY'], 'Accept': 'application/json'}
+    else:
+        config['HEADERS'] = {'Accept': 'application/json'}
+    return config

@@ -1,14 +1,11 @@
 """This module contains functions used in the dvmeta package."""
-import os
-import re
 from typing import Optional
 
 import httpx
 import jmespath
-import typer
 from custom_logging import CustomLogger
-from dotenv import load_dotenv
 from httpxclient import HttpxClient
+
 
 # Set up logging
 logger = CustomLogger.get_logger(__name__)
@@ -96,37 +93,6 @@ def check_connection(config: dict) -> tuple[bool, bool]:
         return False, False
 
 
-def version_type(value: str) -> str:
-    """Validate the value of --version argument.
-
-    Args:
-        value (str): Value of --version argument.
-
-    Returns:
-        str: Value of --version argument if it is valid.
-
-    Raises:
-        typer.BadParameter: If the value is not valid.
-    """
-    valid_special_versions = {'draft', 'latest', 'latest-published'}
-
-    # Normalize and validate the input
-    value = str(value).lower().strip()
-
-    if value in valid_special_versions or re.match(r'^\d+(\.\d+)?$', value):
-        return value
-    msg = f'Invalid value for --version: "{value}".\nMust be "draft", "latest", "latest-published", or a version number like "x" or "x.y".'  # noqa: E501
-    raise typer.BadParameter(msg)
-
-
-def validate_spreadsheet(value: bool, dvdfds_metadata: bool) -> bool:
-    """Validate the value of --spreadsheet argument."""
-    if value and not dvdfds_metadata:
-        msg = 'The --spreadsheet option can only be used if --dvdfds_metadata is set to True.'
-        raise typer.BadParameter(msg)
-    return value
-
-
 def count_files_size(read_dict: dict) -> tuple:
     """Count the number of files and the total size of files in the dataset.
 
@@ -207,27 +173,6 @@ def add_permission_info(meta_dict: dict, permission_dict: Optional[dict] = None)
             meta_value['permission_info'] = {'status': 'NA', 'data': []}
 
     return meta_dict
-
-
-def load_env() -> dict:
-    """Load the environment variables.
-
-    Returns:
-        dict: A dictionary containing the environment variables
-    """
-    # Load the environment variables
-    load_dotenv()
-
-    config = {
-        'API_KEY': os.getenv('API_KEY', None),
-        'BASE_URL': os.getenv('BASE_URL'),
-        'TIMEOUT': None,
-    }
-    if config['API_KEY']:
-        config['HEADERS'] = {'X-Dataverse-key': config['API_KEY'], 'Accept': 'application/json'}
-    else:
-        config['HEADERS'] = {'Accept': 'application/json'}
-    return config
 
 
 def replace_key_with_dataset_id(dictionary: dict) -> dict:
