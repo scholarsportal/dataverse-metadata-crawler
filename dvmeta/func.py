@@ -6,8 +6,12 @@ from typing import Optional
 import httpx
 import jmespath
 import typer
+from custom_logging import CustomLogger
 from dotenv import load_dotenv
 from httpxclient import HttpxClient
+
+# Set up logging
+logger = CustomLogger.get_logger(__name__)
 
 
 def get_pids(read_dict: dict, config: dict) -> tuple:
@@ -72,23 +76,23 @@ def check_connection(config: dict) -> tuple[bool, bool]:
     try:
         with HttpxClient(config) as httpx_client:
             if auth_headers:
-                print('Checking the connection to the Dataverse repository with authentication...')
+                logger.print('Checking the connection to the Dataverse repository with authentication...')
                 response = httpx_client.sync_get(auth_url)
                 if response and response.status_code == httpx_client.httpx_success_status:
-                    print(f'Connection to the dataverse repository {config["BASE_URL"]} is successful.\n')
+                    logger.print(f'Connection to the dataverse repository {config["BASE_URL"]} is successful.')
                     return True, True
-                print('Your API_KEY is invalid. The crawler will now fall back using unauthenticated connection.\n')
+                logger.warning('Your API_KEY is invalid. The crawler will now fall back using unauthenticated connection.')
 
             # Attempt to connect to the repository without authentication
             response = httpx_client.sync_get(public_url)
             if response and response.status_code == httpx_client.httpx_success_status:
-                print(f'Unauthenticated connection to the dataverse repository {config["BASE_URL"]} is successful. The script continue crawling.\n')  # noqa: E501
+                logger.print(f'Unauthenticated connection to the dataverse repository {config["BASE_URL"]} is successful. The script continue crawling.\n')  # noqa: E501
                 return True, False
-            print(f'Failed to connect to the dataverse repository {config["BASE_URL"]}.\nExiting...\n')  # noqa: E501
+            logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}.\nExiting...')  # noqa: E501
             return False, False
 
     except httpx.HTTPStatusError as e:
-        print(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}\n')  # noqa: E501
+        logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}')  # noqa: E501
         return False, False
 
 
