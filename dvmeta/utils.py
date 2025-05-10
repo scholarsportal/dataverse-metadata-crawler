@@ -9,51 +9,11 @@ import orjson
 from custom_logging import CustomLogger
 from dirmanager import DirManager
 from dotenv import load_dotenv
+from timestamp import Timestamp
 
 
 # Initialize the logger
 logger = CustomLogger().get_logger(__name__)
-
-
-class Timestamp:
-    """A class to manage timestamps.
-
-    Attributes:
-        current_time (datetime): The current time.
-
-    Methods:
-        get_current_time: Returns the current time as a datetime object.
-        get_display_time: Returns a string representation of the current time.
-        get_file_timestamp: Returns a string representation of the current time for use in file names.
-    """
-
-    def __init__(self) -> None:
-        """Initialize the class with the current time."""
-        self.current_time = datetime.now()
-
-    def get_current_time(self) -> datetime:
-        """Returns the current time as a datetime object.
-
-        Returns:
-            datetime: The current time
-        """
-        return self.current_time
-
-    def get_display_time(self) -> str:
-        """Returns a string representation of the current time in the format: YYYY-MM-DD HH:MM:SS.
-
-        Returns:
-            str: A string representation of the current time.
-        """
-        return self.current_time.strftime('%Y-%m-%d %H:%M:%S')
-
-    def get_file_timestamp(self) -> str:
-        """Returns a string representation of the current time in the format: YYYYMMDD-HHMMSS.
-
-        Returns:
-            str: A string representation of the current time for use in file names
-        """
-        return self.current_time.strftime('%Y%m%d-%H%M%S')
 
 
 def count_key(key: dict | list | tuple) -> int:

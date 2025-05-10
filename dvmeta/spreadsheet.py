@@ -6,7 +6,7 @@ import jmespath
 import pandas as pd
 from custom_logging import CustomLogger
 from dirmanager import DirManager
-from utils import Timestamp
+from timestamp import Timestamp
 from utils import convert_size
 from utils import gen_checksum
 from utils import list_to_string

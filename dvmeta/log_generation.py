@@ -2,10 +2,12 @@
 from pathlib import Path
 
 import utils
+from custom_logging import CustomLogger
 from dirmanager import DirManager
 from func import count_files_size
 from jinja2 import Template
-from custom_logging import CustomLogger
+from timestamp import Timestamp
+
 
 # Initialize the logger
 logger = CustomLogger().get_logger(__name__)
@@ -51,7 +53,7 @@ def write_to_log(  # noqa:  PLR0913
                              json_file_checksum_dict=json_file_checksum_dict
                              )
 
-    log_file_path = f'{DirManager().log_files_dir()}/log_{utils.Timestamp().get_file_timestamp()}.txt'
+    log_file_path = f'{DirManager().log_files_dir()}/log_{Timestamp().get_file_timestamp()}.txt'
 
     with Path(log_file_path).open('w', encoding='utf-8') as file:
         file.write(rendered)
