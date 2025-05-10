@@ -5,12 +5,14 @@ import sys
 import func
 import typer
 import utils
-from cli_validation import validate_spreadsheet_option, validate_version_type
+from cli_validation import validate_spreadsheet_option
+from cli_validation import validate_version_type
 from custom_logging import CustomLogger
 from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
 from spreadsheet import Spreadsheet
+from timestamp import Timestamp
 from typing_extensions import Annotated
 
 
@@ -75,6 +77,9 @@ def main(
     CustomLogger.setup_logging(DirManager().log_files_dir()) if debug_log else CustomLogger.setup_logging()
     logger = CustomLogger.get_logger(__name__)
 
+    # Create a start time stamp
+    timestamp = Timestamp()
+
     # Load the environment variables
     config: dict = utils.load_env()
 
@@ -84,10 +89,6 @@ def main(
 
     # Check if -s flag is provided without -d flag
     validate_spreadsheet_option(spreadsheet, dvdfds_matadata)
-
-    # Start time
-    start_time_obj, start_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
-    logger.print(f'Start time: {start_time_display}')
 
     # Check if either dvdfds_matadata or permission is provided
     if not dvdfds_matadata and not permission:
@@ -269,19 +270,19 @@ def main(
     meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 
     # End time
-    end_time_obj, end_time_display = utils.Timestamp().get_current_time(), utils.Timestamp().get_display_time()
-    logger.print(f'End time: {end_time_display}')
+    # # logger.print(f'End time: {end_time_display}')
 
-    # Print the elapsed time for the crawling process
-    elapsed_time = end_time_obj - start_time_obj
-    logger.print(f'Elapsed time: {elapsed_time}')
+    # # # Print the elapsed time for the crawling process
+    # # elapsed_time = end_time_obj - start_time_obj
+    # # logger.print(f'Elapsed time: {elapsed_time}')
+
 
     if log:
         # Write to log
         write_to_log(config,
-                     start_time_display,
-                     end_time_display,
-                     elapsed_time,
+                     timestamp.get_display_time(timestamp.start_time),
+                     timestamp.get_display_time(timestamp.end_time),
+                     timestamp.get_elapsed_time(),
                      meta_dict,
                      collections_tree_flatten,
                      failed_metadata_uris,
