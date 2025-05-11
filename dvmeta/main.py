@@ -5,6 +5,7 @@ import sys
 import func
 import typer
 import utils
+from cli_validation import validate_basic_input
 from cli_validation import validate_spreadsheet_option
 from cli_validation import validate_version_type
 from custom_logging import CustomLogger
@@ -91,11 +92,7 @@ def main(
     validate_spreadsheet_option(spreadsheet, dvdfds_matadata)
 
     # Check if either dvdfds_matadata or permission is provided
-    if not dvdfds_matadata and not permission:
-        logger.error(
-            'Please provide the type of metadata to crawl. Use -d or/and -p flag for crawling metadata of datasets or permission metadata, respectively.'
-        )
-        sys.exit(1)
+    validate_basic_input(dvdfds_matadata, permission)
 
     # Check if the authentication token is provided if the permission metadata is requested to be crawled
     if permission and config.get('API_KEY') is None or config.get('API_KEY') == 'None':
