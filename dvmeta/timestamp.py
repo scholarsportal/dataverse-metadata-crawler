@@ -31,7 +31,7 @@ class Timestamp:
 
         Args:
             time_obj (datetime, optional): Time to format. Defaults to current time.
-            
+
         Returns:
             str: A string representation of the time.
         """

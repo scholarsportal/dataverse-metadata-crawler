@@ -98,11 +98,9 @@ class HttpxClient:
             try:
                 response = client.get(url)
                 if response.status_code != self.httpx_success_status:
-                    # print(f'HTTP request Error for {url}: {response.status_code}')
                     return None
 
             except (httpx.HTTPStatusError, httpx.RequestError) as exc:
-                # print(f'HTTP request Error for {url}: {exc}')
                 return None
 
             return response

@@ -5,6 +5,7 @@ from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 
+import jmespath
 import orjson
 from custom_logging import CustomLogger
 from dirmanager import DirManager
