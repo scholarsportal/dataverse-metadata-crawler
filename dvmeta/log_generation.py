@@ -4,9 +4,9 @@ from pathlib import Path
 import utils
 from custom_logging import CustomLogger
 from dirmanager import DirManager
-from func import count_files_size
 from jinja2 import Template
 from timestamp import Timestamp
+from utils import count_files_size
 
 
 # Initialize the logger

@@ -92,30 +92,6 @@ def check_connection(config: dict) -> tuple[bool, bool]:
         logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}')  # noqa: E501
         return False, False
 
-
-def count_files_size(read_dict: dict) -> tuple:
-    """Count the number of files and the total size of files in the dataset.
-
-    Args:
-        read_dict (dict): Dictionary containing the metadata of datasets
-
-    Returns:
-        int: Total number of files in the dataset
-        int: Total size of files in the dataset
-    """
-    filecount_list = []
-    filesize_list = []
-    for key, _item in read_dict.items():
-        if read_dict.get(key).get('data').get('files'):  # type: ignore
-            filecount_list.append(len(read_dict.get(key).get('data').get('files')))  # type: ignore
-            filesize_list.append(sum(jmespath.search('data.files[*].dataFile.filesize|[]', read_dict[key])))  # noqa: PLR1733
-        else:
-            filecount_list.append(0)
-            filesize_list.append(0)
-
-    return sum(filecount_list), sum(filesize_list)
-
-
 def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
     """Add pathIds and path to dataverse_contents from collections_tree_flatten.
 

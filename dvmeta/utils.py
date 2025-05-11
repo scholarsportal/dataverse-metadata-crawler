@@ -167,3 +167,26 @@ def load_env() -> dict:
     else:
         config['HEADERS'] = {'Accept': 'application/json'}
     return config
+
+
+def count_files_size(read_dict: dict) -> tuple:
+    """Count the number of files and the total size of files in the dataset.
+
+    Args:
+        read_dict (dict): Dictionary containing the metadata of datasets
+
+    Returns:
+        int: Total number of files in the dataset
+        int: Total size of files in the dataset
+    """
+    filecount_list = []
+    filesize_list = []
+    for key, _item in read_dict.items():
+        if read_dict.get(key).get('data').get('files'):  # type: ignore
+            filecount_list.append(len(read_dict.get(key).get('data').get('files')))  # type: ignore
+            filesize_list.append(sum(jmespath.search('data.files[*].dataFile.filesize|[]', read_dict[key])))  # noqa: PLR1733
+        else:
+            filecount_list.append(0)
+            filesize_list.append(0)
+
+    return sum(filecount_list), sum(filesize_list)
