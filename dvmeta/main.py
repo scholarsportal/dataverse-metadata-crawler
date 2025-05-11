@@ -16,9 +16,9 @@ from custom_logging import CustomLogger
 from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
+from parsing import Parsing
 from spreadsheet import Spreadsheet
 from timestamp import Timestamp
-from typing_extensions import Annotated
 
 
 app = typer.Typer()
@@ -127,24 +127,17 @@ def main(
         json_file_checksum_dict = []
         permission_dict = {}
 
-        # Flatten the collections tree
-        collections_tree_flatten = utils.flatten_collection(collections_tree)
-        logger.print('Flattened the collections tree...')
-
-        # Add collection id to collection_id_list
-        collection_id_list = [item['id'] for item in collections_tree_flatten.values()]
-
-        # Add root collection id to collection_id_list
-        collection_id_list.append(config['COLLECTION_ID'])
+        # Initialize the Parsing class
+        parsing = Parsing(config, collections_tree)
 
         logger.print('Getting basic metadata of datasets in across dataverses (incl. all children)...')
-        dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(collection_id_list)
+        dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(parsing.collection_id_list)
 
         # Add pathIds and path to dataverse_contents from collections_tree_flatten
-        dataverse_contents = func.add_path_to_dataverse_contents(dataverse_contents, collections_tree_flatten)
+        dataverse_contents = parsing.add_path_to_dataverse_contents(dataverse_contents)
 
         # Get URIs in collections_tree_flatten and append them to ds_dict, and return empty dataverse to empty_dv
-        empty_dv_dict, ds_dict = func.get_pids(dataverse_contents, config)
+        empty_dv_dict, ds_dict = parsing.get_pids()
 
         # Optional arguments
         meta_dict = {}
@@ -247,7 +240,7 @@ def main(
                 {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
             )
 
-        return meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten
+        return meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, parsing.collections_tree_flatten
 
     meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 

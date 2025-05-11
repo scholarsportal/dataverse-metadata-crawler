@@ -108,7 +108,7 @@ def orjson_export(data_dict: dict, file_name: str) -> tuple:
     return None, None
 
 
-def flatten_collection(readdict, path_name='', path_ids=[]):
+def flatten_collection(readdict, path_name='', path_ids=[]) -> dict:
     """Flatten a nested collection in a dictionary.
 
     Args:
