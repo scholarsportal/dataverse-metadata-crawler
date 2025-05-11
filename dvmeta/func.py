@@ -53,45 +53,6 @@ def get_pids(read_dict: dict, config: dict) -> tuple:
     return empty_dv, write_dict
 
 
-def check_connection(config: dict) -> tuple[bool, bool]:
-    """Check the connection to the dataverse repository.
-
-    Args:
-        config (dict): Configuration dictionary
-        auth (bool): Check the connection with authentication
-
-    Returns:
-        bool: True if the connection is successful
-        bool: True if the connection is successful with authentication
-    """
-    base_url = config.get('BASE_URL')
-    api_key = config.get('API_KEY')
-    auth_headers = {'X-Dataverse-key': api_key} if api_key and api_key.lower() != 'none' else {}
-    auth_url = f'{base_url}/api/mydata/retrieve?role_ids=8&dvobject_types=Dataverse&published_states=Published&per_page=1'  # noqa: E501
-    public_url = f'{base_url}/api/info/version'
-
-    try:
-        with HttpxClient(config) as httpx_client:
-            if auth_headers:
-                logger.print('Checking the connection to the Dataverse repository with authentication...')
-                response = httpx_client.sync_get(auth_url)
-                if response and response.status_code == httpx_client.httpx_success_status:
-                    logger.print(f'Connection to the dataverse repository {config["BASE_URL"]} is successful.')
-                    return True, True
-                logger.warning('Your API_KEY is invalid. The crawler will now fall back using unauthenticated connection.')
-
-            # Attempt to connect to the repository without authentication
-            response = httpx_client.sync_get(public_url)
-            if response and response.status_code == httpx_client.httpx_success_status:
-                logger.print(f'Unauthenticated connection to the dataverse repository {config["BASE_URL"]} is successful. The script continue crawling.\n')  # noqa: E501
-                return True, False
-            logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}.\nExiting...')  # noqa: E501
-            return False, False
-
-    except httpx.HTTPStatusError as e:
-        logger.error(f'Failed to connect to the dataverse repository {config["BASE_URL"]}: HTTP Error {e.response.status_code}')  # noqa: E501
-        return False, False
-
 def add_path_to_dataverse_contents(des_dict: dict, ref_dict: dict) -> dict:
     """Add pathIds and path to dataverse_contents from collections_tree_flatten.
 

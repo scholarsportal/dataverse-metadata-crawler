@@ -5,7 +5,9 @@ import sys
 import func
 import typer
 import utils
+from cli_validation import validate_api_token_presence
 from cli_validation import validate_basic_input
+from cli_validation import validate_connection
 from cli_validation import validate_spreadsheet_option
 from cli_validation import validate_version_type
 from custom_logging import CustomLogger
@@ -95,19 +97,11 @@ def main(
     validate_basic_input(dvdfds_matadata, permission)
 
     # Check if the authentication token is provided if the permission metadata is requested to be crawled
-    if permission and config.get('API_KEY') is None or config.get('API_KEY') == 'None':
-        logger.error('Crawling permission metadata requires API Token. Please provide the API Token.Exiting...')
-        sys.exit(1)
+    validate_api_token_presence(permission, config)
 
     # Check the connection to the dataverse repository
-    connection_status, auth_status = func.check_connection(config)
-    if not connection_status:
-        sys.exit(1)
-    if not auth_status:
-        config['API_KEY'] = None
-        if permission:
-            logger.warning('Crawling permission metadata requires valid API Token. The script will skip crawling permission metadata')
-            permission = False
+    auth_status = validate_connection(config)
+    config['API_KEY'] = None if not auth_status else config['API_KEY']
 
     # Initialize the crawler
     metadata_crawler = MetaDataCrawler(config)

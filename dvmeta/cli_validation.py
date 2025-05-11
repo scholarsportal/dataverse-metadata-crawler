@@ -1,9 +1,10 @@
 """This module contains functions for validating command line arguments and environment variables."""
 import re
 
+from click import MissingParameter
 from custom_logging import CustomLogger
 from typer import BadParameter
-
+from httpxclient import HttpxClient
 
 # Set up logging
 logger = CustomLogger.get_logger(__name__)
@@ -55,8 +56,60 @@ def validate_basic_input(dvdfds_matadata_option: bool, permission_option: bool) 
         permission_option (bool): Value of --permission argument.
 
     Raises:
-        BadParameter: If the combination of options is invalid.
+        MissingParameter: If the combination of options is invalid.
     """
     if not dvdfds_matadata_option and not permission_option:
         msg = 'Please provide the type of metadata to crawl. Use -d or/and -p flag for crawling of dataset metadata or permission metadata, respectively.'  # noqa: E501
+        raise MissingParameter(msg, param_type='parameter')
+
+
+def validate_api_token_presence(permission_option: bool, config: dict) -> None:
+    """Validate whether API_KEY is supplied when crawling permission metadata option is enabled.
+
+    Args:
+        permission_option (bool): Value of -p argument.
+        config (dict): The config dict
+
+    Raises:
+        MissingParameter: If the combination of options is invalid.
+    """
+    if permission_option and config.get('API_KEY') is None or config.get('API_KEY') == 'None':
+        msg = 'Crawling permission metadata requires API Token. Please provide the API Token. Exiting...'
+        raise MissingParameter(msg, param_type='parameter')
+
+
+def validate_connection(config: dict) -> bool:
+    """Validate connection to the Dataverse repository.
+
+    Args:
+        config (dict): The config dictionary.
+
+    Returns:
+        bool: True if the API key is valid, False otherwise.
+
+    Raises:
+        BadParameter: If connection to the repository fails.
+    """
+    logger.print('Checking the connection to the Dataverse repository...')
+    client = HttpxClient(config)
+
+    if config.get('API_KEY'):
+        result = client.authenticate_api_key()
+        if result is True:
+            msg = f'Connection to the dataverse repository {config["BASE_URL"]} with API Token is successful.'
+            logger.print(msg)
+            return True
+        if result is False:
+            msg = 'Failed to authenticate the API Token with the repository. Will try to crawl without the API Token.'
+            logger.warning(msg)
+
+    # Always check basic connection whether API auth failed or wasn't provided
+    client = HttpxClient(config)
+    result = client.authenticate_dv_connection()
+    if result is False:
+        msg = f'Failed to connect to the dataverse repository: {config["BASE_URL"]}. Exiting...'
+        logger.error(msg)
         raise BadParameter(msg)
+
+    logger.print(f'Connection to the dataverse repository {config["BASE_URL"]} is successful.')
+    return False
