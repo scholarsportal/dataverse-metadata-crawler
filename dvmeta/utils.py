@@ -1,7 +1,6 @@
 """This module contains utility functions for the dvmeta package."""
 import math
 import os
-from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 

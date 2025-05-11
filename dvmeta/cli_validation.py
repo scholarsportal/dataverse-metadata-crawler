@@ -1,10 +1,18 @@
 """This module contains functions for validating command line arguments and environment variables."""
 import re
+from typing import Any
+from typing import Optional
+from typing import Union
 
 from click import MissingParameter
 from custom_logging import CustomLogger
-from typer import BadParameter
+from httpx import Response
 from httpxclient import HttpxClient
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import ValidationError
+from typer import BadParameter
+
 
 # Set up logging
 logger = CustomLogger.get_logger(__name__)
@@ -113,3 +121,80 @@ def validate_connection(config: dict) -> bool:
 
     logger.print(f'Connection to the dataverse repository {config["BASE_URL"]} is successful.')
     return False
+
+
+# Define the complete Pydantic models for the response structure
+class CollectionData(BaseModel):
+    """Model for collection data."""
+    id: Union[str, int]  # Accept both string and integer for id
+    alias: str
+    name: str
+    # Add other fields as needed
+
+
+class CollectionsTreeResponse(BaseModel):
+    """Model for the collections tree response."""
+    status: str
+    data: Optional[CollectionData] = None
+    # Add other response fields as needed
+
+
+def validate_collections_tree(collection_tree: Response | None) -> dict:
+    """Validate the collections tree.
+
+    Args:
+        collection_tree (Response): The collections tree.
+
+    Returns:
+        dict: The collections tree.
+
+    Raises:
+        Exception: If the collections tree is empty.
+    """
+    if collection_tree is None:
+        msg = 'The collections tree is empty. Exiting...'
+        raise Exception(msg)
+
+    if not collection_tree.json():
+        msg = 'The collections tree is empty. Exiting...'
+        raise Exception(msg)
+    return collection_tree.json()
+
+
+def validate_collection_data(collections_tree_json: dict) -> CollectionData:
+    """Validate the collections tree data using Pydantic.
+
+    Args:
+        collections_tree_json (dict): The JSON response from the API
+
+    Returns:
+        CollectionData: Validated collection data
+
+    Raises:
+        ValidationError: If validation fails
+    """
+    # Parse and validate the entire response
+    tree_model = CollectionsTreeResponse(**collections_tree_json)
+
+    # Check if status is OK and data exists
+    if tree_model.status != 'OK' or tree_model.data is None:
+        msg = 'Collection is not found in the repository or invalid response format.'
+        raise Exception(msg)
+
+    return tree_model.data
+
+
+def update_config_with_collection_data(config: dict[str, Any], collection_data: CollectionData) -> dict[str, Any]:
+    """Update the config dictionary with collection data.
+
+    Args:
+        config (dict): The config dictionary to update
+        collection_data (CollectionData): The validated collection data
+
+    Returns:
+        dict: The updated config
+    """
+    config['COLLECTION_ID'] = collection_data.id
+    config['COLLECTION_ALIAS'] = collection_data.alias
+    config['COLLECTION_NAME'] = collection_data.name
+    return config
