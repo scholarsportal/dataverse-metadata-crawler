@@ -261,7 +261,7 @@ class Spreadsheet:
         with Path(self.spreadsheet_order_file_path).open(encoding='utf-8') as file:
             return file.read().splitlines()
 
-    def _reoder_df_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _reorder_df_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         order_list = self._get_spreadsheet_order()
 
         # Filter the preset column order to only include existing columns in the DataFrame
@@ -344,8 +344,8 @@ class Spreadsheet:
 
         df = pd.DataFrame(cm_meta_holding_list)
 
-        # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
-        df = self._reoder_df_columns(df)
+        # Reorder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
+        df = self._reorder_df_columns(df)
 
         # Create the CSV file
         csv_file_path = f'{self.csv_file_dir}/ds_metadata_{Timestamp().get_file_timestamp()}.csv'
