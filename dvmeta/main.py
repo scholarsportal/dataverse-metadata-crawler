@@ -5,8 +5,11 @@ import sys
 import func
 import typer
 import utils
+from cli_validation import update_config_with_collection_data
 from cli_validation import validate_api_token_presence
 from cli_validation import validate_basic_input
+from cli_validation import validate_collection_data
+from cli_validation import validate_collections_tree
 from cli_validation import validate_connection
 from cli_validation import validate_spreadsheet_option
 from cli_validation import validate_version_type
@@ -101,30 +104,19 @@ def main(
 
     # Check the connection to the dataverse repository
     auth_status = validate_connection(config)
-    config['API_KEY'] = None if not auth_status else config['API_KEY']
+    config['API_KEY'] = None if not auth_status else config['API_KEY']  # Set the API_KEY to None if the connection is not authenticated
 
     # Initialize the crawler
     metadata_crawler = MetaDataCrawler(config)
 
     # Crawl the collection tree metadata
-    response = metadata_crawler.get_collections_tree(collection_alias)
-    if response is None:
-        logger.error('Failed to retrieve collections tree. The API request returned None.')
-        sys.exit(1)
-
-    collections_tree = response.json()
+    collections_tree = validate_collections_tree(metadata_crawler.get_collections_tree(collection_alias))
 
     # Add collection id and alias to config
-    if collections_tree['status'] == 'OK':
-        config['COLLECTION_ID'], config['COLLECTION_ALIAS'], config['COLLECTION_NAME'] = (
-            collections_tree['data']['id'],
-            collections_tree['data']['alias'],
-            collections_tree['data']['name'],
-        )
+    collection_data = validate_collection_data(collections_tree)
 
-    else:
-        logger.error(f"Collection alias '{collection_alias}' is not found in the repository. Exiting...")
-        sys.exit(1)
+    # Update config with validated collection data
+    config = update_config_with_collection_data(config, collection_data)
 
     # Start the main function
     logger.print('Starting the main crawling function...')
