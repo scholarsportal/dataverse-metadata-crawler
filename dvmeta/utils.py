@@ -3,12 +3,14 @@ import math
 import os
 from hashlib import sha256
 from pathlib import Path
+from typing import Any
 
 import jmespath
 import orjson
 from custom_logging import CustomLogger
 from dirmanager import DirManager
 from dotenv import load_dotenv
+from models import CollectionData
 from timestamp import Timestamp
 
 
@@ -190,3 +192,19 @@ def count_files_size(read_dict: dict) -> tuple:
             filesize_list.append(0)
 
     return sum(filecount_list), sum(filesize_list)
+
+
+def update_config_with_collection_data(config: dict[str, Any], collection_data: CollectionData) -> dict[str, Any]:
+    """Update the config dictionary with collection data.
+
+    Args:
+        config (dict): The config dictionary to update
+        collection_data (CollectionData): The validated collection data
+
+    Returns:
+        dict: The updated config
+    """
+    config['COLLECTION_ID'] = collection_data.id
+    config['COLLECTION_ALIAS'] = collection_data.alias
+    config['COLLECTION_NAME'] = collection_data.name
+    return config

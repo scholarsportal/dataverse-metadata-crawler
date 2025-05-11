@@ -5,7 +5,6 @@ import sys
 import func
 import typer
 import utils
-from cli_validation import update_config_with_collection_data
 from cli_validation import validate_api_token_presence
 from cli_validation import validate_basic_input
 from cli_validation import validate_collection_data
@@ -116,7 +115,7 @@ def main(
     collection_data = validate_collection_data(collections_tree)
 
     # Update config with validated collection data
-    config = update_config_with_collection_data(config, collection_data)
+    config = utils.update_config_with_collection_data(config, collection_data)
 
     # Start the main function
     logger.print('Starting the main crawling function...')
