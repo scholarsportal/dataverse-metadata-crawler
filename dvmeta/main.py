@@ -269,14 +269,6 @@ def main(
 
     meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 
-    # End time
-    # # logger.print(f'End time: {end_time_display}')
-
-    # # # Print the elapsed time for the crawling process
-    # # elapsed_time = end_time_obj - start_time_obj
-    # # logger.print(f'Elapsed time: {elapsed_time}')
-
-
     if log:
         # Write to log
         write_to_log(config,
