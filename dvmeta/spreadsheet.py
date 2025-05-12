@@ -1,6 +1,7 @@
 # ruff: noqa: PLR1733
 """A module to manage the creation of CSV files from metadata dictionaries."""
 from pathlib import Path
+from urllib.parse import urljoin
 
 import jmespath
 import pandas as pd
@@ -301,7 +302,7 @@ class Spreadsheet:
             jmespath_dict['RestrictedFiles'] = self._get_restricted_data_files_count(meta_dict[key])
 
             # Get the URL for the dataset
-            jmespath_dict['DatasetURL'] = f"{self.config['BASE_URL']}/dataset.xhtml?persistentId={jmespath_dict['DatasetPersistentId']}"  # noqa: E501
+            jmespath_dict['DatasetURL'] = urljoin(self.config['BASE_URL'], f"/dataset.xhtml?persistentId={jmespath_dict['DatasetPersistentId']}")  # noqa: E501
 
             # Get the dataset version
             jmespath_dict['Version'] = self._get_dataset_version(jmespath_dict)

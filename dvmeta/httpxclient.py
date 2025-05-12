@@ -4,7 +4,7 @@ from types import TracebackType
 from typing import Optional
 
 import httpx
-
+from urllib.parse import urljoin
 
 class HttpxClient:
     """HTTP client class for making GET requests."""
@@ -92,7 +92,7 @@ class HttpxClient:
         base_url: str = self.config.get('BASE_URL', '')
         api_key: str = self.config.get('API_KEY', '')
         auth_headers: dict = {'X-Dataverse-key': api_key}
-        auth_url = f'{base_url}/api/mydata/retrieve?role_ids=8&dvobject_types=Dataverse&published_states=Published&per_page=1'
+        auth_url = urljoin(base_url, '/api/info/version')
 
         try:
             with self.sync_client as client:
@@ -108,7 +108,7 @@ class HttpxClient:
             bool: True if the connection is successful, False otherwise
         """
         base_url: str = self.config.get('BASE_URL', '')
-        public_url = f'{base_url}/api/info/version'  # Use the same endpoint as original code
+        public_url: str = urljoin(base_url, '/api/info/version')
 
         try:
             with self.sync_client as client:
