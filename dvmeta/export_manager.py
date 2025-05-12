@@ -3,6 +3,7 @@ from utils import orjson_export
 from custom_logging import CustomLogger
 
 
+# Set up logging
 logger = CustomLogger.get_logger(__name__)
 
 
