@@ -102,11 +102,13 @@ class HttpxClient:
         base_url: str = self.config.get('BASE_URL', '')
         api_key: str = self.config.get('API_KEY', '')
         auth_headers: dict = {'X-Dataverse-key': api_key}
-        auth_url = urljoin(base_url, '/api/info/version')
+        api_endpoint: str = '/api/users/:me'
+        auth_url = urljoin(base_url, api_endpoint)
 
         try:
             with self.sync_client as client:
                 response = client.get(auth_url, headers=auth_headers)
+                logger.debug(f'API key authentication response: {response.text}')
                 return response.status_code == self.httpx_success_status
         except (httpx.HTTPStatusError, httpx.RequestError):
             return False
