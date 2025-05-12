@@ -2,6 +2,7 @@
 
 import jmespath
 from custom_logging import CustomLogger
+from typing import Optional
 
 
 logger = CustomLogger.get_logger(__name__)
@@ -127,3 +128,78 @@ class Parsing:
             else:
                 empty_dv.append(key)
         return empty_dv, write_dict
+
+    def replace_key_with_dataset_id(self, dictionary: dict) -> dict:
+        """Replace the top-level key in the dictionary with the value of 'datasetId' in the nested 'data'.
+
+        Args:
+            dictionary (dict): The original dictionary.
+
+        Returns:
+            dict: A new dictionary with keys replaced by the value of 'datasetId'.
+        """
+        new_dict = {}
+        for old_key, value in dictionary.items():
+            # Check if the 'data' key exists and has 'datasetId'
+            if isinstance(value, dict) and value.get('data', {}).get('datasetId'):
+                new_key = value.get('data', {}).get('datasetId')  # Get the value of 'datasetId'
+                new_dict[new_key] = value  # Use it as the new key
+            else:
+                # Keep the original key if 'id' is missing
+                new_dict[old_key] = value
+        return new_dict
+
+    def add_path_info(self, meta_dict: dict, ds_dict: dict) -> tuple:
+        """Add path_info to the metadata dictionary, handling nested structures."""
+        ds_dict_copy = ds_dict.copy()
+        for pid_key, pid_value in list(ds_dict_copy.items()):
+            pid_key_str = str(pid_key)
+            # Traverse the meta_dict to find matching datasetId
+            for _meta_key, meta_value in meta_dict.items():
+                if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
+                    # Add path_info to the appropriate nested dictionary
+                    meta_value['path_info'] = pid_value
+                    # Remove from ds_dict_copy
+                    ds_dict_copy.pop(pid_key)
+                    break
+        return meta_dict, ds_dict_copy
+
+
+    def add_permission_info(self, meta_dict: dict, permission_dict: Optional[dict] = None) -> dict:
+        """Add permission_info to the metadata dictionary, handling nested structures."""
+        if isinstance(permission_dict, dict):
+            for pid_key, pid_value in list(permission_dict.items()):
+                pid_key_str = str(pid_key)
+                # Traverse the meta_dict to find matching datasetId
+                for _meta_key, meta_value in meta_dict.items():
+                    if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
+                        # Add path_info to the appropriate nested dictionary
+                        meta_value['permission_info'] = pid_value
+                        # Remove from permission_dict
+                        permission_dict.pop(pid_key)
+                        break
+        for _meta_key, meta_value in meta_dict.items():
+            if 'permission_info' not in meta_value:
+                meta_value['permission_info'] = {'status': 'NA', 'data': []}
+
+        return meta_dict
+
+    def rm_dd_from_failed_uris(self, failed_uris: dict, pid_dict_dd: dict) -> dict:
+        """Remove the deaccessioned datasets from the failed_uris dictionary.
+
+        Args:
+            failed_uris (dict): Dictionary containing the failed URIs
+            pid_dict_dd (dict): Dictionary containing the deaccessioned datasets metadata
+
+        Returns:
+            dict: Dictionary containing the failed URIs without the deaccessioned datasets
+        """
+        # Get the datasetPersistentId from the pid_dict_dd
+        dd_pids = [v['datasetPersistentId'] for v in pid_dict_dd.values()]
+
+        # Loop through the dd_pids, and remove the item if it contains the pid in the key of the failed_uris
+        keys_to_remove = [k for k in failed_uris if any(pid in k for pid in dd_pids)]
+        for k in keys_to_remove:
+            failed_uris.pop(k)
+
+        return failed_uris
