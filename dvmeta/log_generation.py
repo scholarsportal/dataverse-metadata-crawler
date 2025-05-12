@@ -12,6 +12,7 @@ from utils import count_files_size
 # Initialize the logger
 logger = CustomLogger().get_logger(__name__)
 
+
 def write_to_log(  # noqa:  PLR0913
     config: dict,
     start_time_display: str,

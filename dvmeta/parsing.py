@@ -5,6 +5,7 @@ from custom_logging import CustomLogger
 from typing import Optional
 
 
+# Set up logging
 logger = CustomLogger.get_logger(__name__)
 
 class Parsing:

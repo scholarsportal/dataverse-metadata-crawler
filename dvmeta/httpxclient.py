@@ -2,9 +2,15 @@
 import asyncio
 from types import TracebackType
 from typing import Optional
+from urllib.parse import urljoin
 
 import httpx
-from urllib.parse import urljoin
+from custom_logging import CustomLogger
+
+
+# Set up logging
+logger = CustomLogger.get_logger(__name__)
+
 
 class HttpxClient:
     """HTTP client class for making GET requests."""
