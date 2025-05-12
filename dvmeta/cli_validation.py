@@ -13,6 +13,7 @@ from typer import BadParameter
 # Set up logging
 logger = CustomLogger.get_logger(__name__)
 
+
 def validate_spreadsheet_option(value: bool, dvdfds_metadata: bool) -> bool:
     """Validate the value of --spreadsheet argument.
 
