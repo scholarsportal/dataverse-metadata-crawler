@@ -81,7 +81,11 @@ class HttpxClient:
                 return response
             except (httpx.HTTPStatusError, httpx.RequestError):
                 # print(f'HTTP request Error for {url}: {exc}')
-                return [url, 'Error']
+                return httpx.Response(
+                status_code=500,  # Server error as a fallback
+                text='Error occurred during request',
+                request=httpx.Request('GET', url)
+            )
 
     def authenticate_api_key(self) -> bool:
         """Authenticate the API key for the Dataverse repository.
@@ -132,7 +136,11 @@ class HttpxClient:
                 response = client.get(url)
                 return response if response.status_code == self.httpx_success_status else None
         except (httpx.HTTPStatusError, httpx.RequestError):
-            return None
+            return httpx.Response(
+                status_code=500,  # Server error as a fallback
+                text='Error occurred during request',
+                request=httpx.Request('GET', url)
+            )
 
     async def async_get(self, url_list: list) -> list:
         """Asynchronous GET request.
