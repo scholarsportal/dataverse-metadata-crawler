@@ -17,6 +17,7 @@ class Parsing:
         self.collection_id_list = self.make_collection_list()
         self.dataverse_contents = {}
         self.ds_dict = {'datasetPersistentId': []}
+        self.meta_dict = None
 
     @staticmethod
     def _flatten_collection(readdict: dict, path_name='', path_ids=[]) -> dict:
@@ -129,7 +130,7 @@ class Parsing:
                 empty_dv.append(key)
         return empty_dv, write_dict
 
-    def replace_key_with_dataset_id(self, dictionary: dict) -> dict:
+    def replace_key_with_dataset_id(self, dictionary: dict) -> None:
         """Replace the top-level key in the dictionary with the value of 'datasetId' in the nested 'data'.
 
         Args:
@@ -147,22 +148,22 @@ class Parsing:
             else:
                 # Keep the original key if 'id' is missing
                 new_dict[old_key] = value
-        return new_dict
+        self.meta_dict = new_dict
 
-    def add_path_info(self, meta_dict: dict, ds_dict: dict) -> tuple:
+    def add_path_info(self, ds_dict: dict) -> tuple:
         """Add path_info to the metadata dictionary, handling nested structures."""
         ds_dict_copy = ds_dict.copy()
         for pid_key, pid_value in list(ds_dict_copy.items()):
             pid_key_str = str(pid_key)
             # Traverse the meta_dict to find matching datasetId
-            for _meta_key, meta_value in meta_dict.items():
+            for _meta_key, meta_value in self.meta_dict.items():
                 if isinstance(meta_value, dict) and meta_value.get('data', {}).get('datasetId') == int(pid_key_str):
                     # Add path_info to the appropriate nested dictionary
                     meta_value['path_info'] = pid_value
                     # Remove from ds_dict_copy
                     ds_dict_copy.pop(pid_key)
                     break
-        return meta_dict, ds_dict_copy
+        return self.meta_dict, ds_dict_copy
 
 
     def add_permission_info(self, meta_dict: dict, permission_dict: Optional[dict] = None) -> dict:
