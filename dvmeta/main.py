@@ -121,9 +121,6 @@ def main(
 
     async def main_crawler():
         # Initialize empty dict and list to store metadata
-        ds_dict = {'datasetPersistentId': []}
-        failed_metadata_ids = []
-        #json_file_checksum_dict = []
         permission_dict = {}
 
         # Initialize the Parsing class
@@ -162,7 +159,6 @@ def main(
             failed_metadata_uris = parsing.rm_dd_from_failed_uris(failed_metadata_uris, pid_dict_dd)
 
             # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
-            pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
             export_manager.export(pid_dict_dd, 'pid_dict_dd')
 
             if failed:
@@ -198,9 +194,7 @@ def main(
         if spreadsheet:
             # Export the metadata to a CSV file
             csv_file_path, csv_file_checksum = Spreadsheet(config).make_csv_file(meta_dict)
-            export_manager.tracking_dict.append(
-                {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
-            )
+            export_manager.add_spreadsheet_record(csv_file_path, csv_file_checksum)
 
         return meta_dict, export_manager.get_tracking_data(), failed_metadata_uris, pid_dict_dd, parsing.collections_tree_flatten
 
