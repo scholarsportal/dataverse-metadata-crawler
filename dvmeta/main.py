@@ -1,8 +1,6 @@
 """The command line interface for dvmeta."""
 import asyncio
-import sys
 
-import func
 import typer
 import utils
 from cli_validation import validate_api_token_presence
@@ -16,9 +14,9 @@ from custom_logging import CustomLogger
 from dirmanager import DirManager
 from log_generation import write_to_log
 from metadatacrawler import MetaDataCrawler
+from parsing import Parsing
 from spreadsheet import Spreadsheet
 from timestamp import Timestamp
-from typing_extensions import Annotated
 
 
 app = typer.Typer()
@@ -127,24 +125,17 @@ def main(
         json_file_checksum_dict = []
         permission_dict = {}
 
-        # Flatten the collections tree
-        collections_tree_flatten = utils.flatten_collection(collections_tree)
-        logger.print('Flattened the collections tree...')
-
-        # Add collection id to collection_id_list
-        collection_id_list = [item['id'] for item in collections_tree_flatten.values()]
-
-        # Add root collection id to collection_id_list
-        collection_id_list.append(config['COLLECTION_ID'])
+        # Initialize the Parsing class
+        parsing = Parsing(config, collections_tree)
 
         logger.print('Getting basic metadata of datasets in across dataverses (incl. all children)...')
-        dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(collection_id_list)
+        dataverse_contents, failed_dataverse_contents = await metadata_crawler.get_dataverse_contents(parsing.collection_id_list)
 
         # Add pathIds and path to dataverse_contents from collections_tree_flatten
-        dataverse_contents = func.add_path_to_dataverse_contents(dataverse_contents, collections_tree_flatten)
+        dataverse_contents = parsing.add_path_to_dataverse_contents(dataverse_contents)
 
         # Get URIs in collections_tree_flatten and append them to ds_dict, and return empty dataverse to empty_dv
-        empty_dv_dict, ds_dict = func.get_pids(dataverse_contents, config)
+        empty_dv_dict, ds_dict = parsing.get_pids()
 
         # Optional arguments
         meta_dict = {}
@@ -157,13 +148,13 @@ def main(
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
             # Replace the key with the Data #TEMPORARY FIX
-            meta_dict = func.replace_key_with_dataset_id(meta_dict)
+            parsing.replace_key_with_dataset_id(meta_dict)
 
             # Add the path_info to the metadata
-            meta_dict, pid_dict_dd = func.add_path_info(meta_dict, ds_dict)
+            meta_dict, pid_dict_dd = parsing.add_path_info(ds_dict)
 
             # Remove the deaccessioned/draft datasets from the pid_dict_dd for the failed_metadata_uris
-            failed_metadata_uris = func.rm_dd_from_failed_uris(failed_metadata_uris, pid_dict_dd)
+            failed_metadata_uris = parsing.rm_dd_from_failed_uris(failed_metadata_uris, pid_dict_dd)
 
             # Export the updated pid_dict_dd (Which contains deaccessioned/draft datasets) to a JSON file
             pid_dict_json, pid_dict_checksum = utils.orjson_export(pid_dict_dd, 'pid_dict_dd')
@@ -220,7 +211,7 @@ def main(
 
         # Combine the metadata and permission metadata, if both are provided
         # Else write dummy permission metadata to the metadata
-        meta_dict = func.add_permission_info(meta_dict, permission_dict if isinstance(permission_dict, dict) and permission_dict else None)
+        meta_dict = parsing.add_permission_info(meta_dict, permission_dict)
 
         if meta_dict:
             # Export the metadata to a JSON file
@@ -247,7 +238,7 @@ def main(
                 {'type': 'Dataset Metadata CSV', 'path': csv_file_path, 'checksum': csv_file_checksum}
             )
 
-        return meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten
+        return meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, parsing.collections_tree_flatten
 
     meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 
