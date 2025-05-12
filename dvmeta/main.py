@@ -148,10 +148,10 @@ def main(
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
             # Replace the key with the Data #TEMPORARY FIX
-            meta_dict = parsing.replace_key_with_dataset_id(meta_dict)
+            parsing.replace_key_with_dataset_id(meta_dict)
 
             # Add the path_info to the metadata
-            meta_dict, pid_dict_dd = parsing.add_path_info(meta_dict, ds_dict)
+            meta_dict, pid_dict_dd = parsing.add_path_info(ds_dict)
 
             # Remove the deaccessioned/draft datasets from the pid_dict_dd for the failed_metadata_uris
             failed_metadata_uris = parsing.rm_dd_from_failed_uris(failed_metadata_uris, pid_dict_dd)
