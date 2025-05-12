@@ -49,6 +49,19 @@ class ExportManager:
                 'checksum': checksum,
             })
 
+    def add_spreadsheet_record(self, csv_file_path: str, csv_file_checksum: str) -> None:
+        """Add a record for the spreadsheet export to the tracking dictionary.
+
+        Args:
+            csv_file_path: Path to the CSV file
+            csv_file_checksum: Checksum of the CSV file
+        """
+        self.tracking_dict.append({
+            'type': self.DESCRIPTIONS.get('spreadsheet'),
+            'path': csv_file_path,
+            'checksum': csv_file_checksum,
+        })
+
     def get_tracking_data(self) -> list:
         """Get the current tracking dictionary"""
         return self.tracking_dict
