@@ -1,4 +1,5 @@
 """This module contains a class to manage timestamps."""
+# ruff: noqa: DTZ005
 from datetime import datetime
 
 from custom_logging import CustomLogger
@@ -26,7 +27,8 @@ class Timestamp:
         self.current_time = self.start_time
         self.end_time = None
 
-    def get_display_time(self, time_obj=None) -> str:
+    @staticmethod
+    def get_display_time(time_obj: datetime | None = None) -> str:
         """Returns a string representation of the time in the format: YYYY-MM-DD HH:MM:SS.
 
         Args:
