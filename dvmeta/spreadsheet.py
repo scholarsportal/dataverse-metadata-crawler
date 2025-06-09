@@ -113,14 +113,6 @@ class Spreadsheet:
         self.spreadsheet_order_file_path = Path(DirManager().res_dir) / 'spreadsheet_order.csv'
 
     @staticmethod
-    def _mk_csv_file_dir() -> str:
-        csv_file_dir = r'./csv_files'
-        if not Path(csv_file_dir).exists():
-            Path.mkdir(Path(csv_file_dir))
-
-        return csv_file_dir
-
-    @staticmethod
     def _get_data_files_size(dictionary: dict) -> int | str:
         data = dictionary.get('data')
         if data is not None and 'files' in data:
@@ -330,7 +322,7 @@ class Spreadsheet:
 
         return holding_list
 
-    def make_csv_file(self, meta_dict: dict) -> tuple[str, str]:
+    def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
         Args:
@@ -349,7 +341,7 @@ class Spreadsheet:
         df = self._reorder_df_columns(df)
 
         # Create the CSV file
-        csv_file_path = f'{self.csv_file_dir}/ds_metadata_{Timestamp().get_file_timestamp()}.csv'
+        csv_file_path = Path(self.csv_file_dir).joinpath(f'ds_metadata_{Timestamp().get_file_timestamp()}.csv')
 
         df.to_csv(csv_file_path, index=False)
 
