@@ -329,7 +329,7 @@ class Spreadsheet:
             meta_dict (dict): Dataset metadata dictionary
 
         Returns:
-            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+            tuple[Path, str]: Path to the CSV file, Checksum of the CSV file
         """
         # Create a DataFrame from the nested list
 
