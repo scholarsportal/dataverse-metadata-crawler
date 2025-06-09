@@ -5,7 +5,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fcloud_cli.ipynb)
 
 # Dataverse Metadata Crawler
-![Screencapture of the CLI tool](res/screenshot.png)
+![Screencapture of the CLI tool](res/demo.gif)
 
 ## 📜Description
 A Python CLI tool for extracting and exporting metadata from [Dataverse](https://dataverse.org/) repositories. It supports bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
@@ -135,7 +135,7 @@ exported_files/
 │   └── ds_metadata_yyyymmdd-HHMMSS.csv # with -s flag enabled
 └── logs_files/
     └── log_yyyymmdd-HHMMSS.txt # Exported by default, without specifying --no-log
-    └── debug.log # Exported by using -debug flag
+    └── debug.log # Export by using -debug flag
 ```
 
 ## ⚠️Disclaimer
