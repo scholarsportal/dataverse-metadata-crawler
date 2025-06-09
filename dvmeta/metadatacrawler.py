@@ -144,7 +144,7 @@ class MetaDataCrawler:
             id_list (list): List of dataset IDs
 
         Returns:
-            tuple[dict, dict]: Tuple containing two dictionaries:
+            tuple([dict, dict]): Tuple containing two dictionaries:
                 - dataset_meta: Successful metadata indexed by persistent ID
                 - failed_dataset_meta: Failed metadata indexed by URL
         """
