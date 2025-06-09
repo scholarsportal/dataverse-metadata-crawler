@@ -198,7 +198,7 @@ def main(
 
         return meta_dict, export_manager.get_tracking_data(), failed_metadata_uris, pid_dict_dd, parsing.collections_tree_flatten
 
-    meta_dict, json_file_checksum_dict, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
+    meta_dict, export_manager_data, failed_metadata_uris, pid_dict_dd, collections_tree_flatten = asyncio.run(main_crawler())
 
     if log:
         # Write to log
@@ -210,7 +210,7 @@ def main(
                      collections_tree_flatten,
                      failed_metadata_uris,
                      pid_dict_dd,
-                     json_file_checksum_dict)
+                     export_manager_data)
 
     logger.print('✅ Crawling process completed successfully.')
 
