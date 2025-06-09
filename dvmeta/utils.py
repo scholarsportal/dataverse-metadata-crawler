@@ -50,17 +50,17 @@ def convert_size(size_bytes: int | str) -> str:
     return f'{s} {size_name[i]}'
 
 
-def gen_checksum(json_file_path: Path) -> str:
+def gen_checksum(file_path: Path) -> str:
     """Generate a SHA-256 checksum for a file.
 
     Args:
-        json_file_path (Path): The path to the file for which to generate the checksum.
+        file_path (Path): The path to the file for which to generate the checksum.
 
     Returns:
         str: The SHA-256 checksum of the file.
     """
     sha256_hash = sha256()
-    with json_file_path.open('rb') as f:
+    with file_path.open('rb') as f:
         # Read and update hash string value in blocks of 4K
         for byte_block in iter(lambda: f.read(4096), b''):
             sha256_hash.update(byte_block)
@@ -91,7 +91,7 @@ def orjson_export(data_dict: dict, file_name: str) -> tuple:
         file_name (str): The name of the json file to create.
 
     Returns:
-        str: The path to the created json file.
+        tuple(Path, str): A tuple containing the path to the created json file and its checksum.
     """
     json_dir = DirManager().json_files_dir()
     json_file_path = Path(json_dir, f'{file_name}_{Timestamp().get_file_timestamp()}.json')
