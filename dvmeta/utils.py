@@ -50,17 +50,17 @@ def convert_size(size_bytes: int | str) -> str:
     return f'{s} {size_name[i]}'
 
 
-def gen_checksum(json_file_path: str) -> str:
+def gen_checksum(json_file_path: Path) -> str:
     """Generate a SHA-256 checksum for a file.
 
     Args:
-        json_file_path (str): The path to the file for which to generate the checksum.
+        json_file_path (Path): The path to the file for which to generate the checksum.
 
     Returns:
         str: The SHA-256 checksum of the file.
     """
     sha256_hash = sha256()
-    with Path(json_file_path).open('rb') as f:
+    with json_file_path.open('rb') as f:
         # Read and update hash string value in blocks of 4K
         for byte_block in iter(lambda: f.read(4096), b''):
             sha256_hash.update(byte_block)
@@ -94,9 +94,9 @@ def orjson_export(data_dict: dict, file_name: str) -> tuple:
         str: The path to the created json file.
     """
     json_dir = DirManager().json_files_dir()
-    json_file_path = f'{json_dir}/{file_name}_{Timestamp().get_file_timestamp()}.json'
+    json_file_path = Path(json_dir, f'{file_name}_{Timestamp().get_file_timestamp()}.json')
     if data_dict:
-        with Path(json_file_path).open('wb') as file:  # Open file in binary write mode
+        with json_file_path.open('wb') as file:  # Open file in binary write mode
             file.write(orjson.dumps(data_dict, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS))
         checksum = gen_checksum(json_file_path)
         logger.print(f'Exported {file_name} to json file: {json_file_path}'
