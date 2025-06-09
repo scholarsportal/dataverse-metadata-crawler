@@ -137,7 +137,7 @@ def main(
 
         # Optional arguments
         meta_dict = {}
-        failed_metadata_uris = []
+        failed_metadata_uris = {}
         pid_dict_dd = {}
 
         # Initialize the ExportManager
