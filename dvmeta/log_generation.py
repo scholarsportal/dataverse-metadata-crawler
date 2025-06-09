@@ -22,7 +22,7 @@ def write_to_log(  # noqa:  PLR0913
     collections_tree_flatten: dict,
     failed_metadata_ids: dict,
     pid_dict_dd: dict,
-    json_file_checksum_dict: dict,
+    export_manager_data: list[dict],
 ) -> None:
     """Write the crawl log to a file.
 
@@ -35,7 +35,7 @@ def write_to_log(  # noqa:  PLR0913
         collections_tree_flatten (dict): Flattened collections tree
         failed_metadata_ids (dict): Dictionary of failed metadata IDs
         pid_dict_dd (dict): Dictionary of deacessioned/draft datasets
-        json_file_checksum_dict (dict): Dictionary of JSON file checksums
+        export_manager_data (dict): Dictionary of JSON file checksums
 
     Returns:
         str: Path to the log file
@@ -51,7 +51,7 @@ def write_to_log(  # noqa:  PLR0913
                              failed_metadata_ids=utils.count_key(failed_metadata_ids),
                              file_num=count_files_size(meta_dict)[0],
                              file_size=count_files_size(meta_dict)[1],
-                             json_file_checksum_dict=json_file_checksum_dict
+                             json_file_checksum_dict=export_manager_data
                              )
 
     log_file_path = f'{DirManager().log_files_dir()}/log_{Timestamp().get_file_timestamp()}.txt'

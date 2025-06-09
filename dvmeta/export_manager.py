@@ -64,5 +64,9 @@ class ExportManager:
         })
 
     def get_tracking_data(self) -> list:
-        """Get the current tracking dictionary"""
+        """Get the current tracking dictionary.
+
+        Returns:
+            list: The tracking nested list of dictionaries containing exported file information.
+        """
         return self.tracking_dict
