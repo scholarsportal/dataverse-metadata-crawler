@@ -5,7 +5,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fcloud_cli.ipynb)
 
 # Dataverse Metadata Crawler
-![Screencapture of the CLI tool](res/screenshot.png)
+![Screencapture of the CLI tool](res/demo.gif)
 
 ## 📜Description
 A Python CLI tool for extracting and exporting metadata from [Dataverse](https://dataverse.org/) repositories. It supports bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
@@ -85,16 +85,17 @@ python3 dvmeta/main.py [-a AUTH] [-l] [-d] [-p] [-f] [-e] [-s] -c COLLECTION_ALI
 
 **Optional arguments:**
 
-| **Option**           | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                            | **Default**               |
-|----------------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
-| --auth               | -a        | TEXT     | Authentication token to access the Dataverse repository. <br/>                                                                                                                                                                                                          | None                      |
-| --log <br/> --no-log | -l        |          | Output a log file. <br/> Use `--no-log` to disable logging.                                                                                                                                                                                                      | `log` (unless `--no-log`) |
-| --dvdfds_metadata    | -d        |          | Output a JSON file containing metadata of Dataverses, Datasets, and Data Files.                                                                                                                                                                                                             |                           |
-| --permission         | -p        |          | Output a JSON file that stores permission metadata for all Datasets in the repository.                                                                                                                                                                                                     |                           |
-| --emptydv            | -e        |          | Output a JSON file that stores all Dataverses which do **not** contain Datasets (though they might have child Dataverses which have Datasets).                                                                                                                                             |                           |
-| --failed             | -f        |          | Output a JSON file of Dataverses/Datasets that failed to be crawled.                                                                                                                                                                                                                       |                           |
-| --spreadsheet        | -s        |          | Output a CSV file of the metadata of Datasets. <br/> You may find the spreadsheet column explanation [here](https://github.com/scholarsportal/dataverse-metadata-crawler/wiki/Explanation-of--Spreadsheet-Column-Headers).                                                                                                                                                                                                                                             |                           |
-| --help               |           |          | Show the help message.                                                                                                                                                                                                                                                                |                           |
+| **Option**        | **Short** | **Type** | **Description**                                                                                                                                                                                                 | **Default**               |
+|-------------------|-----------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
+| --auth            | -a        | TEXT     | Authentication token to access the Dataverse repository.                                                                                                                                                        | None                      |
+| --log   --no-log  | -l        |          | Output a log file.   Use `--no-log` to disable logging.                                                                                                                                                         | `log` (unless `--no-log`) |
+| --dvdfds_metadata | -d        |          | Output a JSON file containing metadata of Dataverses, Datasets, and Data Files.                                                                                                                                 |                           |
+| --permission      | -p        |          | Output a JSON file that stores permission metadata for all Datasets in the repository.                                                                                                                          |                           |
+| --emptydv         | -e        |          | Output a JSON file that stores all Dataverses which do **NOT** contain Datasets (though they might have child Dataverses which have Datasets).                                                                  |                           |
+| --failed          | -f        |          | Output a JSON file of Dataverses/Datasets that failed to be crawled.                                                                                                                                            |                           |
+| --spreadsheet     | -s        |          | Output a CSV file of the metadata of Datasets.<br>See the [spreadsheet column explanation notes](https://github.com/scholarsportal/dataverse-metadata-crawler/wiki/Explanation-of--Spreadsheet-Column-Headers). |                           |
+| --debug-log       | -debug    |          | Enable debug logging. This will create a debug log file in the log_files directory.                                                                                                                             |                           |
+| --help            |           |          | Show the help message.                                                                                                                                                                                          |                           |
 
 ### Examples
 ```sh
@@ -134,6 +135,7 @@ exported_files/
 │   └── ds_metadata_yyyymmdd-HHMMSS.csv # with -s flag enabled
 └── logs_files/
     └── log_yyyymmdd-HHMMSS.txt # Exported by default, without specifying --no-log
+    └── debug.log # Export by using -debug flag
 ```
 
 ## ⚠️Disclaimer
@@ -144,7 +146,7 @@ exported_files/
 No tests have been written yet. Contributions welcome!
 
 ## 💻Development
-1. Dependencies management: [poetry](https://python-poetry.org/) - Use `poetry` to manage dependencies and reflect changes in the `pyproject.toml` file.
+1. Dependencies management: [uv](https://docs.astral.sh/uv/) - Use `uv` to manage dependencies and reflect changes in the `pyproject.toml` file.
 2. Linter: [ruff](https://docs.astral.sh/ruff/) - Follow the linting rules outlined in the `pyproject.toml` file.
 
 ## 🙌Contributing
@@ -163,17 +165,17 @@ If you use this software in your work, please cite it using the following metada
 
 APA:
 ```
-Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.5) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
+Lui, L. H. (2025). Dataverse Metadata Crawler (Version 0.1.6) [Computer software]. https://github.com/scholarsportal/dataverse-metadata-crawler
 ```
 
 BibTeX:
 ```
 @software{Lui_Dataverse_Metadata_Crawler_2025,
   author = {Lui, Lok Hei},
-  month = {Apr},
+  month = {June},
   title = {Dataverse Metadata Crawler},
   url = {https://github.com/scholarsportal/dataverse-metadata-crawler},
-  version = {0.1.5},
+  version = {0.1.6},
   year = {2025}
 }
 ```

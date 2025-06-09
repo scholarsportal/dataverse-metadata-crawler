@@ -1,18 +1,17 @@
-name: Poetry export requirements.txt
+name: uv export requirements.txt
 on:
   push:
     branches:
       - 'main'  # Trigger only on pull requests made to the main branch
     paths:
-      - 'requirements.txt'
       - 'pyproject.toml'
-      - 'poetry.lock'
+      - 'uv.lock'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
  
 jobs:
-  poetry-export_dependencies:
+  uv-export_dependencies:
     strategy:
       fail-fast: false
     runs-on: ubuntu-latest
@@ -21,17 +20,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          poetry-version: 'latest'
-      - name: Install the poetry-plugin-export
-        run: poetry self add poetry-plugin-export
-      - name: Update poetry lock file
-        run: poetry lock
+          version: 'latest'
       - name: Export the project dependencies to requirements.txt
         run: |
-          poetry export -f requirements.txt --output requirements.txt
+          uv pip compile pyproject.toml -o requirements.txt
       - name: Get branch name
         shell: bash
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
@@ -42,8 +37,8 @@ jobs:
         id: check_changes
         shell: bash
         run: |
-          # Use git diff to check actual content changes with the remotte
-          if ! git diff origin/main --quiet -- requirements.txt poetry.lock; then
+          # Use git diff to check actual content changes with the remote
+          if ! git diff origin/main --quiet -- requirements.txt uv.lock; then
             echo "changes=true" >> $GITHUB_OUTPUT
           else
             echo "changes=false" >> $GITHUB_OUTPUT
@@ -56,13 +51,13 @@ jobs:
         if: steps.check_changes.outputs.changes == 'true'
         run: |
           # Stage all changes before pulling
-          git add requirements.txt poetry.lock
+          git add requirements.txt uv.lock
 
           # Check if there are staged changes
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update requirements.txt and poetry.lock [skip ci]"
+            git commit -m "chore: update requirements.txt and uv.lock [skip ci]"
           fi
           
           # Pull with rebase to get latest changes

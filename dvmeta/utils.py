@@ -1,52 +1,21 @@
 """This module contains utility functions for the dvmeta package."""
 import math
-from datetime import datetime
+import os
 from hashlib import sha256
 from pathlib import Path
+from typing import Any
 
+import jmespath
 import orjson
+from custom_logging import CustomLogger
 from dirmanager import DirManager
+from dotenv import load_dotenv
+from models import CollectionData
+from timestamp import Timestamp
 
 
-class Timestamp:
-    """A class to manage timestamps.
-
-    Attributes:
-        current_time (datetime): The current time.
-
-    Methods:
-        get_current_time: Returns the current time as a datetime object.
-        get_display_time: Returns a string representation of the current time.
-        get_file_timestamp: Returns a string representation of the current time for use in file names.
-    """
-
-    def __init__(self) -> None:
-        """Initialize the class with the current time."""
-        self.current_time = datetime.now()
-
-    def get_current_time(self) -> datetime:
-        """Returns the current time as a datetime object.
-
-        Returns:
-            datetime: The current time
-        """
-        return self.current_time
-
-    def get_display_time(self) -> str:
-        """Returns a string representation of the current time in the format: YYYY-MM-DD HH:MM:SS.
-
-        Returns:
-            str: A string representation of the current time.
-        """
-        return self.current_time.strftime('%Y-%m-%d %H:%M:%S')
-
-    def get_file_timestamp(self) -> str:
-        """Returns a string representation of the current time in the format: YYYYMMDD-HHMMSS.
-
-        Returns:
-            str: A string representation of the current time for use in file names
-        """
-        return self.current_time.strftime('%Y%m%d-%H%M%S')
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 
 def count_key(key: dict | list | tuple) -> int:
@@ -81,17 +50,17 @@ def convert_size(size_bytes: int | str) -> str:
     return f'{s} {size_name[i]}'
 
 
-def gen_checksum(json_file_path: str) -> str:
+def gen_checksum(file_path: Path) -> str:
     """Generate a SHA-256 checksum for a file.
 
     Args:
-        json_file_path (str): The path to the file for which to generate the checksum.
+        file_path (Path): The path to the file for which to generate the checksum.
 
     Returns:
         str: The SHA-256 checksum of the file.
     """
     sha256_hash = sha256()
-    with Path(json_file_path).open('rb') as f:
+    with file_path.open('rb') as f:
         # Read and update hash string value in blocks of 4K
         for byte_block in iter(lambda: f.read(4096), b''):
             sha256_hash.update(byte_block)
@@ -122,24 +91,24 @@ def orjson_export(data_dict: dict, file_name: str) -> tuple:
         file_name (str): The name of the json file to create.
 
     Returns:
-        str: The path to the created json file.
+        tuple(Path, str): A tuple containing the path to the created json file and its checksum.
     """
     json_dir = DirManager().json_files_dir()
-    json_file_path = f'{json_dir}/{file_name}_{Timestamp().get_file_timestamp()}.json'
+    json_file_path = Path(json_dir, f'{file_name}_{Timestamp().get_file_timestamp()}.json')
     if data_dict:
-        with Path(json_file_path).open('wb') as file:  # Open file in binary write mode
+        with json_file_path.open('wb') as file:  # Open file in binary write mode
             file.write(orjson.dumps(data_dict, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS))
         checksum = gen_checksum(json_file_path)
-        print(f'\n[INFO] Exported {file_name} to json file: {json_file_path}'
-              f'\n[INFO] Checksum (SHA-256): {checksum}\n')
+        logger.print(f'Exported {file_name} to json file: {json_file_path}'
+              f'\nChecksum (SHA-256): {checksum}')
 
         return json_file_path, checksum
-    print(f'\n[INFO] {file_name} is empty, no json file is created.')
+    logger.print(f'{file_name} is empty, no json file is created.')
 
     return None, None
 
 
-def flatten_collection(readdict, path_name='', path_ids=[]):
+def flatten_collection(readdict, path_name='', path_ids=[]) -> dict:
     """Flatten a nested collection in a dictionary.
 
     Args:
@@ -179,3 +148,63 @@ def flatten_collection(readdict, path_name='', path_ids=[]):
     if 'children' not in dictionary_data or not dictionary_data['children']:
         return {}
     return loop_item(dictionary_data, path_name, path_ids)
+
+
+def load_env() -> dict:
+    """Load the environment variables.
+
+    Returns:
+        dict: A dictionary containing the environment variables
+    """
+    # Load the environment variables
+    load_dotenv()
+
+    config = {
+        'API_KEY': os.getenv('API_KEY', None),
+        'BASE_URL': os.getenv('BASE_URL'),
+        'TIMEOUT': None,
+    }
+    if config['API_KEY']:
+        config['HEADERS'] = {'X-Dataverse-key': config['API_KEY'], 'Accept': 'application/json'}
+    else:
+        config['HEADERS'] = {'Accept': 'application/json'}
+    return config
+
+
+def count_files_size(read_dict: dict) -> tuple:
+    """Count the number of files and the total size of files in the dataset.
+
+    Args:
+        read_dict (dict): Dictionary containing the metadata of datasets
+
+    Returns:
+        int: Total number of files in the dataset
+        int: Total size of files in the dataset
+    """
+    filecount_list = []
+    filesize_list = []
+    for key, _item in read_dict.items():
+        if read_dict.get(key).get('data').get('files'):  # type: ignore
+            filecount_list.append(len(read_dict.get(key).get('data').get('files')))  # type: ignore
+            filesize_list.append(sum(jmespath.search('data.files[*].dataFile.filesize|[]', read_dict[key])))  # noqa: PLR1733
+        else:
+            filecount_list.append(0)
+            filesize_list.append(0)
+
+    return sum(filecount_list), sum(filesize_list)
+
+
+def update_config_with_collection_data(config: dict[str, Any], collection_data: CollectionData) -> dict[str, Any]:
+    """Update the config dictionary with collection data.
+
+    Args:
+        config (dict): The config dictionary to update
+        collection_data (CollectionData): The validated collection data
+
+    Returns:
+        dict: The updated config
+    """
+    config['COLLECTION_ID'] = collection_data.id
+    config['COLLECTION_ALIAS'] = collection_data.alias
+    config['COLLECTION_NAME'] = collection_data.name
+    return config

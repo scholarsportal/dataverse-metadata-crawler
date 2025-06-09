@@ -2,9 +2,15 @@
 from pathlib import Path
 
 import utils
+from custom_logging import CustomLogger
 from dirmanager import DirManager
-from func import count_files_size
 from jinja2 import Template
+from timestamp import Timestamp
+from utils import count_files_size
+
+
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 
 def write_to_log(  # noqa:  PLR0913
@@ -16,7 +22,7 @@ def write_to_log(  # noqa:  PLR0913
     collections_tree_flatten: dict,
     failed_metadata_ids: dict,
     pid_dict_dd: dict,
-    json_file_checksum_dict: dict,
+    export_manager_data: list[dict],
 ) -> None:
     """Write the crawl log to a file.
 
@@ -29,7 +35,7 @@ def write_to_log(  # noqa:  PLR0913
         collections_tree_flatten (dict): Flattened collections tree
         failed_metadata_ids (dict): Dictionary of failed metadata IDs
         pid_dict_dd (dict): Dictionary of deacessioned/draft datasets
-        json_file_checksum_dict (dict): Dictionary of JSON file checksums
+        export_manager_data (dict): Dictionary of JSON file checksums
 
     Returns:
         str: Path to the log file
@@ -45,15 +51,15 @@ def write_to_log(  # noqa:  PLR0913
                              failed_metadata_ids=utils.count_key(failed_metadata_ids),
                              file_num=count_files_size(meta_dict)[0],
                              file_size=count_files_size(meta_dict)[1],
-                             json_file_checksum_dict=json_file_checksum_dict
+                             json_file_checksum_dict=export_manager_data
                              )
 
-    log_file_path = f'{DirManager().log_files_dir()}/log_{utils.Timestamp().get_file_timestamp()}.txt'
+    log_file_path = f'{DirManager().log_files_dir()}/log_{Timestamp().get_file_timestamp()}.txt'
 
     with Path(log_file_path).open('w', encoding='utf-8') as file:
         file.write(rendered)
 
-    return print(f'The crawl log is saved at: {log_file_path}\n')
+    return logger.print(f'The crawl log is saved at: {log_file_path}')
 
 
 def read_template() -> str:

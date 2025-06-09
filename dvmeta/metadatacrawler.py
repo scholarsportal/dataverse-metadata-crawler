@@ -1,6 +1,14 @@
 """Crawl metadata of datasets in a collection."""
+from urllib.parse import urlencode
+from urllib.parse import urljoin
+
 import httpx
+from custom_logging import CustomLogger
 from httpxclient import HttpxClient
+
+
+# Set up logging
+logger = CustomLogger.get_logger(__name__)
 
 
 class MetaDataCrawler:
@@ -22,9 +30,7 @@ class MetaDataCrawler:
     def __init__(self, config: dict) -> None:
         """Initialize the class with the configuration settings."""
         self.config = self._define_headers(config)
-        self.url_tree = f"{config['BASE_URL']}/api/info/metrics/tree?parentAlias={config['COLLECTION_ALIAS']}"
         self.http_success_status = 200
-        self.url_dataverse = f"{config['BASE_URL']}/api/dataverses"
         self.count = 0
         self.last_printed_count = 0
         self.write_dict = {}
@@ -52,19 +58,43 @@ class MetaDataCrawler:
 
         return config
 
-    def _get_dataset_content_url(self, identifier: str) -> str:
-        return f"{self.config['BASE_URL']}/api/datasets/:persistentId/versions/:{self.config['VERSION']}?persistentId={identifier}"  # noqa: E501
+    def _build_url(self, path: str, query_params: dict | None = None) -> str:
+        """Build a URL with proper handling of slashes and query parameters.
 
-    def _get_permission_url(self, identifier: str) -> str:
-        return f"{self.config['BASE_URL']}/api/datasets/{identifier}/assignments"
+        Args:
+            path: The API path to append to the base URL
+            query_params: Optional dictionary of query parameters
 
-    def _get_dataverse_contents_url(self, identifier: str) -> str:
-        return f"{self.config['BASE_URL']}/api/dataverses/{identifier}/contents"
+        Returns:
+            A properly formatted URL
+        """
+        base_url = self.config['BASE_URL']
+        url = urljoin(base_url, path)
 
-    def _get_tree_url(self, parent_alias: str | None = None) -> str:
+        if query_params:
+            return f'{url}?{urlencode(query_params)}'
+        return url
+
+    def _parse_dataset_content_url(self, identifier: str) -> str:
+        # Note: This URL has a specific format with ':' placeholders
+        path = f"/api/datasets/:persistentId/versions/:{self.config['VERSION']}"
+        query_params = {'persistentId': identifier}
+        return self._build_url(path, query_params)
+
+    def _parse_permission_url(self, identifier: str) -> str:
+        path = f'/api/datasets/{identifier}/assignments'
+        return self._build_url(path)
+
+    def _parse_dataverse_contents_url(self, identifier: str) -> str:
+        path = f'/api/dataverses/{identifier}/contents'
+        return self._build_url(path)
+
+    def _parse_tree_url(self, parent_alias: str | None = None) -> str:
+        path = '/api/info/metrics/tree'
         if parent_alias:
-            return f"{self.config['BASE_URL']}/api/info/metrics/tree?parentAlias={self.config['COLLECTION_ALIAS']}"
-        return f"{self.config['BASE_URL']}/api/info/metrics/tree"
+            query_params = {'parentAlias': self.config['COLLECTION_ALIAS']}
+            return self._build_url(path, query_params)
+        return self._build_url(path)
 
     def get_collections_tree(self, parent_alias: str | None = None) -> httpx.Response | None:
         """Get the tree structure of the collection.
@@ -72,7 +102,7 @@ class MetaDataCrawler:
         Returns:
             dict: Dictionary containing the tree structure of the collection
         """
-        response = self.client.sync_get(self._get_tree_url(parent_alias))
+        response = self.client.sync_get(self._parse_tree_url(parent_alias))
 
         if response and response.status_code == self.http_success_status:
             return response
@@ -89,7 +119,7 @@ class MetaDataCrawler:
                 - dataverse_contents: Successful metadata indexed by identifier
                 - failed_dataverse_contents: Failed metadata indexed by identifier
         """  # noqa: W505
-        url_list = [self._get_dataverse_contents_url(identifier) for identifier in id_list]
+        url_list = [self._parse_dataverse_contents_url(identifier) for identifier in id_list]
 
         response = await self.client.async_get(url_list)
 
@@ -108,8 +138,17 @@ class MetaDataCrawler:
         return dataverse_contents, failed_dataverse_contents
 
     async def get_datasets_meta(self, id_list: list) -> tuple[dict, dict]:
-        """Crawl complete metadata of datasets."""
-        url_list = [self._get_dataset_content_url(identifier) for identifier in id_list]
+        """Crawl complete metadata of datasets.
+
+        Args:
+            id_list (list): List of dataset IDs
+
+        Returns:
+            tuple([dict, dict]): Tuple containing two dictionaries:
+                - dataset_meta: Successful metadata indexed by persistent ID
+                - failed_dataset_meta: Failed metadata indexed by URL
+        """
+        url_list = [self._parse_dataset_content_url(identifier) for identifier in id_list]
 
         response = await self.client.async_get(url_list)
 
@@ -128,8 +167,17 @@ class MetaDataCrawler:
         return dataset_meta, failed_dataset_meta
 
     async def get_datasets_permissions(self, id_list: list) -> tuple[dict, dict]:
-        """Crawl permissions of datasets."""
-        id_url_dict = {self._get_permission_url(identifier): identifier for identifier in id_list}
+        """Crawl permissions of datasets.
+
+        Args:
+            id_list (list): List of dataset IDs
+
+        Returns:
+            tuple[dict, dict]: Tuple containing two dictionaries:
+                - permission_meta: Successful metadata indexed by persistent ID
+                - failed_permission_meta: Failed metadata indexed by URL
+        """
+        id_url_dict = {self._parse_permission_url(identifier): identifier for identifier in id_list}
 
         responses = await self.client.async_get(list(id_url_dict.keys()))
 

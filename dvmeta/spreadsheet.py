@@ -1,14 +1,20 @@
 # ruff: noqa: PLR1733
 """A module to manage the creation of CSV files from metadata dictionaries."""
 from pathlib import Path
+from urllib.parse import urljoin
 
 import jmespath
 import pandas as pd
+from custom_logging import CustomLogger
 from dirmanager import DirManager
-from utils import Timestamp
+from timestamp import Timestamp
 from utils import convert_size
 from utils import gen_checksum
 from utils import list_to_string
+
+
+# Initialize the logger
+logger = CustomLogger().get_logger(__name__)
 
 
 class Spreadsheet:
@@ -105,14 +111,6 @@ class Spreadsheet:
             }"""  # noqa: E501
         self.csv_file_dir = DirManager().csv_files_dir()
         self.spreadsheet_order_file_path = Path(DirManager().res_dir) / 'spreadsheet_order.csv'
-
-    @staticmethod
-    def _mk_csv_file_dir() -> str:
-        csv_file_dir = r'./csv_files'
-        if not Path(csv_file_dir).exists():
-            Path.mkdir(Path(csv_file_dir))
-
-        return csv_file_dir
 
     @staticmethod
     def _get_data_files_size(dictionary: dict) -> int | str:
@@ -256,7 +254,7 @@ class Spreadsheet:
         with Path(self.spreadsheet_order_file_path).open(encoding='utf-8') as file:
             return file.read().splitlines()
 
-    def _reoder_df_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _reorder_df_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         order_list = self._get_spreadsheet_order()
 
         # Filter the preset column order to only include existing columns in the DataFrame
@@ -296,7 +294,7 @@ class Spreadsheet:
             jmespath_dict['RestrictedFiles'] = self._get_restricted_data_files_count(meta_dict[key])
 
             # Get the URL for the dataset
-            jmespath_dict['DatasetURL'] = f"{self.config['BASE_URL']}/dataset.xhtml?persistentId={jmespath_dict['DatasetPersistentId']}"  # noqa: E501
+            jmespath_dict['DatasetURL'] = urljoin(self.config['BASE_URL'], f"/dataset.xhtml?persistentId={jmespath_dict['DatasetPersistentId']}")  # noqa: E501
 
             # Get the dataset version
             jmespath_dict['Version'] = self._get_dataset_version(jmespath_dict)
@@ -324,14 +322,14 @@ class Spreadsheet:
 
         return holding_list
 
-    def make_csv_file(self, meta_dict: dict) -> tuple[str, str]:
+    def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
         Args:
             meta_dict (dict): Dataset metadata dictionary
 
         Returns:
-            tuple[str, str]: Path to the CSV file, Checksum of the CSV file
+            tuple[Path, str]: Path to the CSV file, Checksum of the CSV file
         """
         # Create a DataFrame from the nested list
 
@@ -339,18 +337,18 @@ class Spreadsheet:
 
         df = pd.DataFrame(cm_meta_holding_list)
 
-        # Reoder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
-        df = self._reoder_df_columns(df)
+        # Reorder the columns in the DataFrame according to to the preset order (/res/spreadsheet_order.csv)
+        df = self._reorder_df_columns(df)
 
         # Create the CSV file
-        csv_file_path = f'{self.csv_file_dir}/ds_metadata_{Timestamp().get_file_timestamp()}.csv'
+        csv_file_path = Path(self.csv_file_dir).joinpath(f'ds_metadata_{Timestamp().get_file_timestamp()}.csv')
 
         df.to_csv(csv_file_path, index=False)
 
         # Generate a checksum for the CSV file
         checksum = gen_checksum(csv_file_path)
 
-        print(f'\n[INFO] Exported Dataset Metadata CSV: {csv_file_path}'
-              f'\n[INFO] Checksum (SHA-256): {checksum}\n')
+        logger.print(f'Exported Dataset Metadata CSV: {csv_file_path}'
+              f'\nChecksum (SHA-256): {checksum}')
 
         return csv_file_path, checksum

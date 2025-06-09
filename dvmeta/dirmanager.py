@@ -2,6 +2,11 @@
 
 from pathlib import Path
 
+from custom_logging import CustomLogger
+
+
+# Set up logging
+logger = CustomLogger.get_logger(__name__)
 
 class DirManager:
     """Class to manage directories and files in the data vault."""

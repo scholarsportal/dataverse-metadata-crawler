@@ -2,8 +2,14 @@
 import asyncio
 from types import TracebackType
 from typing import Optional
+from urllib.parse import urljoin
 
 import httpx
+from custom_logging import CustomLogger
+
+
+# Set up logging
+logger = CustomLogger.get_logger(__name__)
 
 
 class HttpxClient:
@@ -81,7 +87,47 @@ class HttpxClient:
                 return response
             except (httpx.HTTPStatusError, httpx.RequestError):
                 # print(f'HTTP request Error for {url}: {exc}')
-                return [url, 'Error']
+                return httpx.Response(
+                status_code=500,  # Server error as a fallback
+                text='Error occurred during request',
+                request=httpx.Request('GET', url)
+            )
+
+    def authenticate_api_key(self) -> bool:
+        """Authenticate the API key for the Dataverse repository.
+
+        Returns:
+            bool: True if the API key is valid, False otherwise
+        """
+        base_url: str = self.config.get('BASE_URL', '')
+        api_key: str = self.config.get('API_KEY', '')
+        auth_headers: dict = {'X-Dataverse-key': api_key}
+        api_endpoint: str = '/api/users/:me'
+        auth_url = urljoin(base_url, api_endpoint)
+
+        try:
+            with self.sync_client as client:
+                response = client.get(auth_url, headers=auth_headers)
+                logger.debug(f'API key authentication response: {response.text}')
+                return response.status_code == self.httpx_success_status
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            return False
+
+    def authenticate_dv_connection(self) -> bool:
+        """Authenticate the connection to the Dataverse repository.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise
+        """
+        base_url: str = self.config.get('BASE_URL', '')
+        public_url: str = urljoin(base_url, '/api/info/version')
+
+        try:
+            with self.sync_client as client:
+                response = client.get(public_url)
+                return response.status_code == self.httpx_success_status
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            return False
 
     def sync_get(self, url: str) -> httpx.Response | None:
         """Synchronous GET request.
@@ -90,22 +136,19 @@ class HttpxClient:
             url (str): URL to GET
 
         Returns:
-            httpx.Response: Response object
+            httpx.Response | None: Response object or None if error
         """
-        if self.sync_client.is_closed:
-            self.sync_client = httpx.Client(timeout=None)
-        with self.sync_client as client:
-            try:
+        try:
+            # Create a new client for each request to avoid the "closed client" issue
+            with httpx.Client(timeout=None, headers=dict(self.config['HEADERS'])) as client:
                 response = client.get(url)
-                if response.status_code != self.httpx_success_status:
-                    # print(f'HTTP request Error for {url}: {response.status_code}')
-                    return None
-
-            except (httpx.HTTPStatusError, httpx.RequestError) as exc:
-                # print(f'HTTP request Error for {url}: {exc}')
-                return None
-
-            return response
+                return response if response.status_code == self.httpx_success_status else None
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            return httpx.Response(
+                status_code=500,  # Server error as a fallback
+                text='Error occurred during request',
+                request=httpx.Request('GET', url)
+            )
 
     async def async_get(self, url_list: list) -> list:
         """Asynchronous GET request.
