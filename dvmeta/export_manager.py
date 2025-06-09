@@ -1,6 +1,8 @@
 """ExportManager class for managing JSON exports with descriptions and tracking."""
-from utils import orjson_export
+from pathlib import Path
+
 from custom_logging import CustomLogger
+from utils import orjson_export
 
 
 # Set up logging
@@ -22,7 +24,7 @@ class ExportManager:
 
     def __init__(self) -> None:
         """Initialize the export manager."""
-        self.tracking_dict = []
+        self.tracking_nested_list = []
 
     def export(self, data: dict, export_type: str) -> None:
         """Export data to JSON and log the information.
@@ -43,30 +45,30 @@ class ExportManager:
         json_path, checksum = orjson_export(data, export_type)
 
         # Log the export if tracking is enabled
-        if self.tracking_dict is not None:
-            self.tracking_dict.append({
+        if self.tracking_nested_list is not None:
+            self.tracking_nested_list.append({
                 'type': description,
                 'path': json_path,
                 'checksum': checksum,
             })
 
-    def add_spreadsheet_record(self, csv_file_path: str, csv_file_checksum: str) -> None:
+    def add_spreadsheet_record(self, csv_file_path: Path, csv_file_checksum: str) -> None:
         """Add a record for the spreadsheet export to the tracking dictionary.
 
         Args:
             csv_file_path: Path to the CSV file
             csv_file_checksum: Checksum of the CSV file
         """
-        self.tracking_dict.append({
+        self.tracking_nested_list.append({
             'type': self.DESCRIPTIONS.get('spreadsheet'),
             'path': csv_file_path,
             'checksum': csv_file_checksum,
         })
 
     def get_tracking_data(self) -> list:
-        """Get the current tracking dictionary.
+        """Get the current tracking nested list of dictionaries.
 
         Returns:
             list: The tracking nested list of dictionaries containing exported file information.
         """
-        return self.tracking_dict
+        return self.tracking_nested_list
