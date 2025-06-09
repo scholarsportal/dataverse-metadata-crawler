@@ -149,7 +149,7 @@ def main(
             pid_list = [item['datasetPersistentId'] for item in ds_dict.values()]
             meta_dict, failed_metadata_uris = await metadata_crawler.get_datasets_meta(pid_list)
 
-            # Replace the key with the Data #TEMPORARY FIX
+            # Replace the key with the Data #! TEMPORARY FIX
             parsing.replace_key_with_dataset_id(meta_dict)
 
             # Add the path_info to the metadata
