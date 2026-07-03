@@ -178,3 +178,6 @@ exported_files/
 
 # test.ipynb
 test.ipynb
+
+# node
+node_modules/
