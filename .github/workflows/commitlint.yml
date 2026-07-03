@@ -21,6 +21,10 @@ jobs:
         run: |
           git --version
           deno --version
+
+      - name: Install commitlint
+        run: |
+          deno install --node-modules-dir=auto
           deno run -A npm:@commitlint/cli --version
 
       - name: Validate PR commits with commitlint
