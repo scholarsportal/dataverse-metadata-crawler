@@ -1,0 +1,29 @@
+name: Test PR Creation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          git switch -c test-pr-${{ github.run_id }}
+          echo "$(date)" > test.txt
+          git add test.txt
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -m "Test PR"
+          git push origin HEAD
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          title: Test PR
+          body: Testing whether GITHUB_TOKEN can create PRs.
