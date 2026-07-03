@@ -8,22 +8,24 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  test-pr:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - run: |
-          git switch -c test-pr-${{ github.run_id }}
-          echo "$(date)" > test.txt
-          git add test.txt
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git commit -m "Test PR"
-          git push origin HEAD
+      - name: Make a tiny change
+        run: |
+          echo "Test run: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> test-pr.txt
 
-      - uses: peter-evans/create-pull-request@v7
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
         with:
-          title: Test PR
-          body: Testing whether GITHUB_TOKEN can create PRs.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gha-test-pr-creation
+          base: main
+          commit-message: "chore: test PR creation"
+          title: "Test PR creation from GitHub Actions"
+          body: |
+            This PR is a test to verify that GitHub Actions can create pull requests in this repository.
+          delete-branch: true
