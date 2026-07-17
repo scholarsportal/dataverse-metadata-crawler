@@ -47,10 +47,10 @@ class TyperOptions:
         '-debug',
         help='Enable debug logging to a file. This will create a log file in the logs directory ',
     )
-    log_level: str = typer.Option(
-        LogLevel.INFO,
+    log_level: LogLevel = typer.Option(
+        None,
         '--log-level',
-        help=f'The logging level for console and file output. Options are: {", ".join(LogLevel.__members__.keys())}.',
+        help=f'The logging level for console and file output. Options are: {", ".join(LogLevel.__members__.keys())}. Defaults to LOG_LEVEL in .env, else INFO.',  # noqa: E501
     )
     metadata_source: str = typer.Option(
         None,
@@ -69,4 +69,10 @@ class TyperOptions:
         '--semaphore-limit',
         '-sl',
         help='The maximum number of concurrent tasks when crawling datasets. Please adjust this number based on the expected load on the dataverse repository. Might need some trial and error to find the optimal number.',  # noqa: E501
+    )
+    timestamp_enabled: bool = typer.Option(
+        True,
+        '--timestamp/--no-timestamp',
+        '-ts',
+        help='Whether to include timestamp in the exported JSON filenames.',
     )

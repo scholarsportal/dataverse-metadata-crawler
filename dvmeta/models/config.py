@@ -5,11 +5,16 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
+from dvmeta.models.log_level import LogLevel
+
 
 class Config(BaseSettings):
     """Model for the configuration settings."""
 
-    model_config = SettingsConfigDict(env_file='.env')
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        extra='ignore',
+    )
 
     api_token: str | None = Field(
         None,
@@ -29,3 +34,10 @@ class Config(BaseSettings):
     collection_name: str | None = None
     metadata_source: str | None = None
     semaphore_limit: int = 5
+    log_level: LogLevel = Field(
+        LogLevel.INFO,
+        validation_alias=AliasChoices(
+            'log_level',
+            'LOG_LEVEL',
+        ),
+    )

@@ -11,8 +11,9 @@ from dvmeta.models.config import Config
 from dvmeta.models.csv_model import DatasetExportRow
 from dvmeta.models.dataverse import CitationAccessor
 from dvmeta.models.dataverse import DatasetData
-from dvmeta.services.dir_manager import DirManager
+from dvmeta.services.dir_manager import RES_DIR
 from dvmeta.services.dir_manager import ExportDir
+from dvmeta.services.dir_manager import get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import convert_size
 from dvmeta.services.utils import gen_checksum
@@ -26,8 +27,8 @@ class Spreadsheet:
     def __init__(self, config: Config) -> None:
         """Initialize the class with the configuration settings."""
         self.config = config
-        self.csv_file_dir = DirManager().get_dir(ExportDir.CSV)
-        self.spreadsheet_order_file_path = Path(DirManager().res_dir) / 'spreadsheet_order.csv'
+        self.csv_file_dir = get_dir(ExportDir.CSV)
+        self.spreadsheet_order_file_path = RES_DIR / 'spreadsheet_order.csv'
 
     @staticmethod
     def serialize_row(row: DatasetExportRow) -> dict:

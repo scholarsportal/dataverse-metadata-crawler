@@ -1,48 +1,34 @@
-"""ExportManager class for managing JSON exports with descriptions and tracking."""
+"""Module to export metadata dictionaries to JSON files."""
 
-from dvmeta.services.utils import orjson_export
+from pathlib import Path
+
+import orjson
+from loguru import logger
+
+from dvmeta.services.dir_manager import ExportDir
+from dvmeta.services.dir_manager import get_dir
+from dvmeta.services.timestamp import get_file_timestamp
+from dvmeta.services.utils import gen_checksum
 
 
-class ExportManager:
-    """Class to manage JSON exports with predefined descriptions and tracking."""
+def export_json(data: dict, export_type: str, timestamp_enabled: bool = True) -> tuple[Path | None, str | None]:
+    """Export data to a timestamped JSON file and log the result.
 
-    # Preset descriptions for different export types
-    DESCRIPTIONS = {
-        'pid_dict_dd': 'Hierarchical Information of Datasets(deaccessioned/draft)',
-        'failed_metadata_uris': 'PIDs of Datasets Failed to be crawled (Representation & File)',
-        'permission_dict': 'Dataset Metadata (Permission)',
-        'pid_dict': 'Hierarchical Information of Datasets',
-        'ds_metadata': 'Dataset Metadata (Representation, File & Permission)',
-        'empty_dv': 'Empty Dataverses',
-        'spreadsheet': 'Dataset Metadata CSV',
-    }
+    Args:
+        data: The data to export
+        export_type: Type identifier, used as the filename prefix
+        timestamp_enabled: Whether to include a timestamp in the filename
+    Returns:
+        Tuple of (json_path, checksum), or (None, None) if data is empty
+    """
+    file_name = f'{export_type}_{get_file_timestamp()}.json' if timestamp_enabled else f'{export_type}.json'
+    json_file_path = get_dir(ExportDir.JSON) / file_name
 
-    def __init__(self) -> None:
-        """Initialize the export manager."""
-        self.tracking_nested_list = []
+    if isinstance(data, dict) and data:
+        json_file_path.write_bytes(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS))
+        checksum = gen_checksum(json_file_path)
+        logger.info(f'Exported {json_file_path.name} to json file: {json_file_path}\nChecksum (SHA-256): {checksum}')
+        return json_file_path, checksum
 
-    def export(self, data: dict, export_type: str) -> None:
-        """Export data to JSON and log the information.
-
-        Args:
-            data: The data to export
-            export_type: Type identifier (used as filename and for preset description)
-
-        Returns:
-            Tuple of (json_path, checksum) from the export operation
-        """
-        # Get description from presets or use custom if provided
-        description = self.DESCRIPTIONS.get(export_type, f'Export of {export_type}')
-
-        # Export the data
-        json_path, checksum = orjson_export(data, export_type)
-
-        # Log the export if tracking is enabled
-        if self.tracking_nested_list is not None:
-            self.tracking_nested_list.append(
-                {
-                    'type': description,
-                    'path': json_path,
-                    'checksum': checksum,
-                }
-            )
+    logger.warning(f'{json_file_path.name} is empty, no json file is created.')
+    return None, None

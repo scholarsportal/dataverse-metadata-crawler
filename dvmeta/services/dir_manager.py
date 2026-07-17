@@ -3,7 +3,9 @@
 from enum import StrEnum
 from pathlib import Path
 
-from loguru import logger
+
+EXPORT_BASE_DIR = Path('./exported_files')
+RES_DIR = Path('./res')
 
 
 class ExportDir(StrEnum):
@@ -14,36 +16,15 @@ class ExportDir(StrEnum):
     CSV = 'csv_files'
 
 
-class DirManager:
-    """Class to manage directories and files in the data vault."""
+def get_dir(name: ExportDir) -> Path:
+    """Return the path to the requested export directory, creating it if it doesn't exist.
 
-    def __init__(self) -> None:
-        """Initialize the class with the base directory for exported files."""
-        self.export_base_dir = r'./exported_files'
-        self.res_dir = r'./res'
+    Args:
+        name (ExportDir): The name of the directory to retrieve.
 
-    @staticmethod
-    def _create_dir(path: Path) -> Path:
-        """Helper method to create a directory if it doesn't exist.
-
-        Args:
-            path (Path): The path to the directory.
-
-        Returns:
-            Path: The path to the directory.
-        """
-        if not Path.exists(path):
-            Path(path).mkdir(parents=True, exist_ok=True)
-            logger.debug(f'Created directory: {path}')
-        return path
-
-    def get_dir(self, name: ExportDir) -> Path:
-        """Get the directory path based on the provided name. Crate the directory if it doesn't exist.
-
-        Args:
-            name (ExportDir): The name of the directory to retrieve.
-
-        Returns:
-            Path: The path to the requested directory.
-        """
-        return self._create_dir(Path(self.export_base_dir) / name)
+    Returns:
+        Path: The path to the requested directory.
+    """
+    path = EXPORT_BASE_DIR / name
+    path.mkdir(parents=True, exist_ok=True)
+    return path
