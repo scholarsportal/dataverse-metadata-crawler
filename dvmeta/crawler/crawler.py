@@ -13,6 +13,7 @@ Flow:
 import httpx2
 
 from dvmeta.models.config import Config
+from dvmeta.models.dataverse import DatasetVersionTag
 from dvmeta.models.search_params import DataverseSearchParams
 from dvmeta.services.client.endpoints import Endpoints
 from dvmeta.services.client.http import HttpxClient
@@ -95,25 +96,29 @@ class MetaDataCrawler:
             for item in response.json().get("data", {}).get("items", [])
         ]
 
-    async def get_dataset_metadata(self, dataset_ids: list, version: str | None = None) -> dict:
+    async def get_dataset_metadata(
+        self, dataset_ids: list[str], version: DatasetVersionTag | None
+    ) -> dict:
         """Get the metadata of a dataset using the dataset Native API endpoint.
 
         Parameters
         ----------
-            dataset_pids (list): A list of dataset persistent IDs (global_id in search API)
+            dataset_ids (list): A list of dataset database IDs (global_id in search API)
             version (str | None): The version of the dataset
 
         Returns
         -------
             dict: A dictionary mapping dataset IDs to their metadata
         """
-        url_list: list = [Endpoints.ds_json(dataset_id=id, version=version) for id in dataset_ids]
+        url_list: list = [
+            Endpoints.ds_json(dataset_id=dataset_id, version=version) for dataset_id in dataset_ids
+        ]
 
         response = await self.client.async_get(url_list)
 
         return {
-            dataset_pid: res.json()
-            for dataset_pid, res in zip(dataset_ids, response, strict=False)
+            dataset_id: res.json()
+            for dataset_id, res in zip(dataset_ids, response, strict=False)
             if res is not None
         }
 

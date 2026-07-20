@@ -36,55 +36,6 @@ def parse_search_response(
     )  # remove duplicates while preserving order. One dataset might have multiple versions, like DRAFT and PUBLISHED.
 
 
-def get_pids_from_search_response(items: list[dict]) -> dict:
-    """Parse the search response to extract dataset PIDs.
-
-    Parameters
-    ----------
-    items : list[dict]
-        The items field returned by the Search API response
-
-    Returns
-    -------
-    dict: A dictionary mapping dataset (entity) IDs to their global IDs (PIDs).
-
-    """
-    return {
-        item.get("entity_id"): item.get("global_id")
-        for item in items
-        if item.get("global_id") is not None
-    }
-
-
-def merge_oaiore_to_meta_dict(meta_dict: dict, oaiore_metadata: dict) -> dict:
-    """Merge OAI-ORE metadata into the meta_dict.
-
-    Parameters
-    ----------
-    meta_dict : dict
-        A dictionary mapping dataset (entity) IDs to their metadata.
-    oaiore_metadata : dict
-        The OAI-ORE metadata dictionary to merge, which contains dataset paths.
-
-
-
-    Returns
-    -------
-    dict: The merged metadata dictionary with OAI-ORE metadata included.
-    """
-    for dataset_id, dataset_meta in meta_dict.items():
-        oaiore_meta = oaiore_metadata.get(dataset_id)
-
-        dataset_meta["dataset_path"] = None
-
-        if oaiore_meta:
-            dataset_meta["dataset_path"] = get_path_from_oaiore(oaiore_meta)
-        else:
-            logger.debug(f"No OAI-ORE metadata found for dataset ID {dataset_id}.")
-
-    return meta_dict
-
-
 def extract_path(node: dict, dataset_name: str) -> str:
     """Walk schema:isPartOf chain from leaf to root, return ordered path.
 
@@ -154,7 +105,6 @@ def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) ->
     meta_dict_copy = meta_dict.copy()  # Create a copy to avoid modifying the original dictionary
 
     for dataset_id in meta_dict:
-        logger.debug(f"Processing dataset ID: {dataset_id}; type: {type(dataset_id)}")
         permissions = permission_metadata.get(str(dataset_id))
         if permissions is not None:
             meta_dict_copy[dataset_id]["permissions"] = permissions

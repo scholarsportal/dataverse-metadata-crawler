@@ -12,7 +12,6 @@ from dvmeta.cli.utils import spinner
 from dvmeta.cli.validation import validate_connection
 from dvmeta.crawler.crawler import MetaDataCrawler
 from dvmeta.crawler.utils import (
-    get_pids_from_search_response,
     get_start_parameters,
     get_total_count_from_response,
     merge_permission_to_meta_dict,
@@ -171,10 +170,9 @@ def crawl_metadata(ctx: typer.Context) -> None:
     with spinner():
         crawler = state.crawler
         dataset_ids = state.dataset_ids
-        # pids = list(get_pids_from_search_response(state.crawl_result.dataset_records).values())
 
         state.crawl_result.meta_dict = asyncio.run(
-            crawler.get_dataset_metadata(dataset_ids)  # version=state.config.version)
+            crawler.get_dataset_metadata(dataset_ids, version=state.config.version)
         )
 
         if not state.skip_export:

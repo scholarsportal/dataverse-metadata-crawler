@@ -1,10 +1,10 @@
 """Models for the API responses."""
 
-from typing import Literal
+from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, Field
 
-# ruff: noqa: N815
+# ruff:file-ignore[mixed-case-variable-in-class-scope]
 
 
 class DvResponse(BaseModel):
@@ -14,21 +14,21 @@ class DvResponse(BaseModel):
     data: dict
 
 
+DatasetVersionKeyword: TypeAlias = Literal["draft", "latest", "latest-published"]
+DatasetVersionTag = DatasetVersionKeyword | float | int | None
+
+
 class DatasetVersionTags(BaseModel):
     """Permitted dataset version type."""
 
-    version: Literal["draft", "latest", "latest-published"] | float | int
+    version: DatasetVersionTag
 
 
 class DatasetField(BaseModel):
     """Base Dataverse metadata field."""
 
     typeName: str
-    typeClass: Literal[
-        "primitive",
-        "compound",
-        "controlledVocabulary",
-    ]
+    typeClass: Literal["primitive", "compound", "controlledVocabulary"]
     multiple: bool = False
     value: object
 
@@ -45,18 +45,11 @@ class MetadataBlock(BaseModel):
         """Return fields indexed by typeName."""
         return {field.typeName: field for field in self.fields}
 
-    def get_field(
-        self,
-        field_name: str,
-    ) -> DatasetField | None:
+    def get_field(self, field_name: str) -> DatasetField | None:
         """Return a DatasetField by typeName."""
         return self.field_map.get(field_name)
 
-    def get_value(
-        self,
-        field_name: str,
-        default: object = None,
-    ) -> object:
+    def get_value(self, field_name: str, default: object = None) -> object:
         """Return field value."""
         field = self.get_field(field_name)
 
@@ -102,28 +95,14 @@ class DatasetData(BaseModel):
 class CitationAccessor:
     """Helper for citation metadata."""
 
-    def __init__(
-        self,
-        citation_block: MetadataBlock,
-    ) -> None:
+    def __init__(self, citation_block: MetadataBlock) -> None:
         self.block = citation_block
 
-    def get(
-        self,
-        field_name: str,
-        default: object = None,
-    ) -> object:
+    def get(self, field_name: str, default: object = None) -> object:
         """Return raw field value."""
-        return self.block.get_value(
-            field_name,
-            default,
-        )
+        return self.block.get_value(field_name, default)
 
-    def get_compound_values(
-        self,
-        field_name: str,
-        child_field: str,
-    ) -> list[object]:
+    def get_compound_values(self, field_name: str, child_field: str) -> list[object]:
         """Return values from compound fields."""
         rows = self.get(field_name, [])
 
@@ -133,8 +112,6 @@ class CitationAccessor:
             child = row.get(child_field)
 
             if child:
-                result.append(
-                    child.get("value"),
-                )
+                result.append(child.get("value"))
 
         return result

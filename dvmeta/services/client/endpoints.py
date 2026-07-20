@@ -1,6 +1,13 @@
 """The dataverse API endpoints used in the crawler."""
 
-from typing import Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, get_args
+
+from dvmeta.models.dataverse import DatasetVersionKeyword
+
+if TYPE_CHECKING:
+    from dvmeta.models.dataverse import DatasetVersionTag
 
 
 class Endpoints:
@@ -19,9 +26,7 @@ class Endpoints:
         return "api/search"
 
     @staticmethod
-    def ds_json(
-        dataset_id: str, version: Literal["latest", "latest-published", "draft"] = "latest"
-    ) -> str:
+    def ds_json(dataset_id: str, version: DatasetVersionTag = "latest") -> str:
         """Dataset JSON representation endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
@@ -29,7 +34,7 @@ class Endpoints:
         Parameters
         ----------
         dataset_id : str
-        version : Literal["latest", "latest-published", "draft"], optional
+        version : DatasetVersionTag, optional
             By default, "latest".
 
         Returns
@@ -39,7 +44,7 @@ class Endpoints:
         url = f"api/datasets/{dataset_id}"
 
         # Handle inputs if version is not in the allowed values
-        if version not in {"latest", "latest-published", "draft"}:
+        if version not in set(get_args(DatasetVersionKeyword)):
             version = "latest"
 
         if version != "latest":
