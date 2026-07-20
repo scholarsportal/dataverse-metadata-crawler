@@ -6,7 +6,7 @@ class Endpoints:
 
     @staticmethod
     def search() -> str:
-        """The search endpoint.
+        """Search endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/search.html
 
@@ -18,7 +18,7 @@ class Endpoints:
 
     @staticmethod
     def ds_json(dataset_id: str | int, draft: bool = False) -> str:
-        """The dataset JSON representation endpoint.
+        """Dataset JSON representation endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
 
@@ -42,7 +42,7 @@ class Endpoints:
 
     @staticmethod
     def ds_permissions(dataset_id: str | int) -> str:
-        """The dataset permissions endpoint.
+        """Dataset permissions endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#list-role-assignments-in-a-dataset
 
@@ -57,8 +57,10 @@ class Endpoints:
         return f"api/datasets/{dataset_id}/assignments"
 
     @staticmethod
-    def ds_meta_exporters(persistent_id: str, exporter: str = "dataverse_json", version: str | None = None) -> str:
-        """The dataset metadata exporters endpoint.
+    def ds_meta_exporters(
+        persistent_id: str, exporter: str = "dataverse_json", version: str | None = None
+    ) -> str:
+        """Dataset metadata exporters endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
 
@@ -80,7 +82,7 @@ class Endpoints:
 
     @staticmethod
     def dv_json(dataverse_id: str) -> str:
-        """The dataverse JSON representation endpoint.
+        """Dataverse JSON representation endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#view-a-dataverse-collection
 
@@ -96,7 +98,7 @@ class Endpoints:
 
     @staticmethod
     def user_info() -> str:
-        """The user info endpoint.
+        """User info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-user-information-in-json-format
 
@@ -108,7 +110,7 @@ class Endpoints:
 
     @staticmethod
     def version_info() -> str:
-        """The version info endpoint.
+        """Version info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#show-dataverse-software-version-and-build-number
 

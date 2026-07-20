@@ -74,7 +74,7 @@ class MetaDataCrawler:
         Returns
         -------
             list: A list of dataset metadata dictionaries
-        """  # noqa: W505
+        """  # ruff:ignore[doc-line-too-long]
         search_url = Endpoints.search()
 
         search_params.per_page = 1000
@@ -139,7 +139,7 @@ class MetaDataCrawler:
         Returns
         -------
             dict: A dictionary mapping dataset IDs to their OAI_ORE metadata
-        """  # noqa: W505
+        """  # ruff:ignore[doc-line-too-long]
         url_list = [
             Endpoints.ds_meta_exporters(persistent_id=str(pid), exporter="OAI_ORE") for pid in pids
         ]
