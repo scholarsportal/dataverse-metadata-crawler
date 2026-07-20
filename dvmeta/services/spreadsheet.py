@@ -5,11 +5,11 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import jmespath
+from dv_schema_models.dataset_instance import load_dataset
 from loguru import logger
 
 from dvmeta.models.config import Config
 from dvmeta.models.csv_model import DatasetExportRow
-from dvmeta.models.dataverse import CitationAccessor, DatasetData
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import (
@@ -176,144 +176,182 @@ class Spreadsheet:
         csv_file_path = Path(self.csv_file_dir).joinpath(f"ds_metadata_{get_file_timestamp()}.csv")
 
         rows = []
-        for _, dataset_meta in meta_dict.items():
-            dataset = DatasetData.model_validate({
-                "id": dataset_meta.get("datasetVersion", {}).get("id"),
-                "datasetId": dataset_meta.get("datasetVersion", {}).get("datasetId"),
-                "datasetVersion": dataset_meta.get("datasetVersion", {}),
-            })
-            if (
-                dataset.datasetVersion is None
-                or dataset.datasetVersion.metadataBlocks.citation is None
-            ):
-                continue
 
-            citation = CitationAccessor(dataset.datasetVersion.metadataBlocks.citation)
+        for dataset_meta in meta_dict.values():
+            try:
+                loaded_dataset = load_dataset(dataset_meta)
+                logger.debug(
+                    f"loaded dataset: {loaded_dataset.data.datasetVersion.datasetPersistentId}"
+                )
+            except Exception as e:
+                logger.error(f"Failed to load dataset: {e}")
+                continue
 
             file_stats = self._get_datafile_meta_usage(dataset_meta)
             file_size = get_data_files_size(dataset_meta)
-            subject_list: list = citation.get("subject", []) or []
             path_info = dataset_meta.get("dataset_path", "Unknown")
 
+            citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
+            if citation_block is None:
+                logger.error(
+                    f"Dataset {loaded_dataset.data.datasetVersion.datasetPersistentId} has no citation block, skipping"
+                )
+                continue
+            subject_list: list = citation_block.get_value("subject") or []
+
+            logger.debug(
+                f"{loaded_dataset.data.datasetVersion.datasetPersistentId}: {loaded_dataset.data.datasetVersion.lastUpdateTime}"
+            )
+
             row: DatasetExportRow = {
-                "DatasetTitle": citation.get("title", "") or "",
+                "DatasetTitle": citation_block.get_value("title") or "",
                 "DatasetURL": (
                     urljoin(
                         self.config.base_url,
-                        f"/dataset.xhtml?persistentId={dataset.datasetVersion.datasetPersistentId}",
+                        f"/dataset.xhtml?persistentId={loaded_dataset.data.datasetVersion.datasetPersistentId}",
                     )
-                    if dataset.datasetVersion.datasetPersistentId
+                    if loaded_dataset.data.datasetVersion.datasetPersistentId
                     else ""
                 ),
                 "DS_Path": path_info,
-                "ID": dataset.id,
-                "DatasetPersistentId": dataset.datasetVersion.datasetPersistentId,
-                "DatasetId": dataset.datasetId,
-                "VersionState": dataset.datasetVersion.versionState,
-                "LastUpdateTime": dataset.datasetVersion.lastUpdateTime,
-                "ReleaseTime": dataset.datasetVersion.releaseTime,
-                "CreateTime": dataset.datasetVersion.createTime,
+                "ID": loaded_dataset.data.id,
+                "DatasetPersistentId": loaded_dataset.data.datasetVersion.datasetPersistentId,
+                "DatasetId": loaded_dataset.data.datasetVersion.datasetId,
+                "VersionState": loaded_dataset.data.datasetVersion.versionState,
+                "LastUpdateTime": loaded_dataset.data.datasetVersion.lastUpdateTime,
+                # "ReleaseTime": loaded_dataset.data.datasetVersion.releaseTime,
+                "CreateTime": loaded_dataset.data.datasetVersion.createTime,
                 "Version": str(self._get_dataset_version(dataset_meta)),
                 "FileCount": get_data_files_count(dataset_meta),
                 "FileSize": file_size,
                 "FileSize_normalized": convert_size(file_size),
-                "License": dataset.datasetVersion.license.get("name")
-                if dataset.datasetVersion.license
+                "License": license_info.get("name")
+                if (license_info := getattr(loaded_dataset.data.datasetVersion, "license", None))
                 else "",
                 "RestrictedFiles": self._get_restricted_data_files_count(dataset_meta),
-                "TermsOfUse": dataset.datasetVersion.termsOfUse,
-                "RequestAccess": dataset.datasetVersion.fileAccessRequest,
-                "TermsAccess": dataset.datasetVersion.termsOfAccess,
+                "TermsOfUse": loaded_dataset.data.datasetVersion.termsOfUse or "",
+                "RequestAccess": loaded_dataset.data.datasetVersion.fileAccessRequest,
+                "TermsAccess": loaded_dataset.data.datasetVersion.termsOfAccess or "",
                 "DF_Hierarchy": file_stats["DF_Hierarchy"],
                 "DF_Tags": file_stats["DF_Tags"],
                 "DF_Description": file_stats["DF_Description"],
                 # Citation — simple/primitive fields
-                "CM_Subtitle": citation.get("subtitle", "") or "",
-                "CM_AltTitle": citation.get("alternativeTitle", []) or [],
-                "CM_AltURL": citation.get("alternativeURL", "") or "",
-                "CM_Notes": citation.get("notesText", "") or "",
-                "CM_Lang": citation.get("language", []) or [],
-                "CM_ProdDate": citation.get("productionDate", "") or "",
-                "CM_ProdLocation": citation.get("productionPlace", []) or [],
-                "CM_DisDate": citation.get("distributionDate", "") or "",
-                "CM_Depositor": citation.get("depositor", "") or "",
-                "CM_DepositDate": citation.get("dateOfDeposit", "") or "",
-                "CM_DataType": citation.get("kindOfData", []) or [],
-                "CM_RelMaterial": citation.get("relatedMaterial", []) or [],
-                "CM_RelDatasets": citation.get("relatedDatasets", []) or [],
-                "CM_OtherRef": citation.get("otherReferences", []) or [],
-                "CM_DataSources": citation.get("dataSources", []) or [],
-                "CM_OriginSources": citation.get("originOfSources", "") or "",
-                "CM_CharSources": citation.get("characteristicOfSources", "") or "",
-                "CM_DocSources": citation.get("accessToSources", "") or "",
+                "CM_Subtitle": citation_block.get_value("subtitle") or "",
+                "CM_AltTitle": citation_block.get_value("alternativeTitle") or [],
+                "CM_AltURL": citation_block.get_value("alternativeURL") or "",
+                "CM_Notes": citation_block.get_value("notesText") or "",
+                "CM_Lang": citation_block.get_value("language") or [],
+                "CM_ProdDate": citation_block.get_value("productionDate") or "",
+                "CM_ProdLocation": citation_block.get_value("productionPlace") or [],
+                "CM_DisDate": citation_block.get_value("distributionDate") or "",
+                "CM_Depositor": citation_block.get_value("depositor") or "",
+                "CM_DepositDate": citation_block.get_value("dateOfDeposit") or "",
+                "CM_DataType": citation_block.get_value("kindOfData") or [],
+                "CM_RelMaterial": citation_block.get_value("relatedMaterial") or [],
+                "CM_RelDatasets": citation_block.get_value("relatedDatasets") or [],
+                "CM_OtherRef": citation_block.get_value("otherReferences") or [],
+                "CM_DataSources": citation_block.get_value("dataSources") or [],
+                "CM_OriginSources": citation_block.get_value("originOfSources") or "",
+                "CM_CharSources": citation_block.get_value("characteristicOfSources") or "",
+                "CM_DocSources": citation_block.get_value("accessToSources") or "",
                 # Citation — compound fields (extract specific child values)
-                "CM_Agency": citation.get_compound_values("otherId", "otherIdAgency"),
-                "CM_ID": citation.get_compound_values("otherId", "otherIdValue"),
-                "CM_Author": citation.get_compound_values("author", "authorName"),
-                "CM_NumberAuthors": len(citation.get_compound_values("author", "authorName")),
-                "CM_AuthorAff": citation.get_compound_values("author", "authorAffiliation"),
-                "CM_AuthorIDType": citation.get_compound_values("author", "authorIdentifierScheme"),
-                "CM_AuthorID": citation.get_compound_values("author", "authorIdentifier"),
-                "CM_ContactName": citation.get_compound_values(
+                "CM_Agency": citation_block.get_subfield_values("otherId", "otherIdAgency"),
+                "CM_ID": citation_block.get_subfield_values("otherId", "otherIdValue"),
+                "CM_Author": citation_block.get_subfield_values("author", "authorName"),
+                "CM_NumberAuthors": len(citation_block.get_subfield_values("author", "authorName")),
+                "CM_AuthorAff": citation_block.get_subfield_values("author", "authorAffiliation"),
+                "CM_AuthorIDType": citation_block.get_subfield_values(
+                    "author", "authorIdentifierScheme"
+                ),
+                "CM_AuthorID": citation_block.get_subfield_values("author", "authorIdentifier"),
+                "CM_ContactName": citation_block.get_subfield_values(
                     "datasetContact", "datasetContactName"
                 ),
-                "CM_ContactAff": citation.get_compound_values(
+                "CM_ContactAff": citation_block.get_subfield_values(
                     "datasetContact", "datasetContactAffiliation"
                 ),
-                "CM_Descr": citation.get_compound_values("dsDescription", "dsDescriptionValue"),
-                "CM_DescrDate": citation.get_compound_values("dsDescription", "dsDescriptionDate"),
+                "CM_Descr": citation_block.get_subfield_values(
+                    "dsDescription", "dsDescriptionValue"
+                ),
+                "CM_DescrDate": citation_block.get_subfield_values(
+                    "dsDescription", "dsDescriptionDate"
+                ),
                 "CM_Subject": subject_list,
                 **self._get_dataset_subjects(subject_list),
-                "CM_Keyword": citation.get_compound_values("keyword", "keywordValue"),
-                "CM_KeywordVocab": citation.get_compound_values("keyword", "keywordVocabulary"),
-                "CM_KeywordURI": citation.get_compound_values("keyword", "keywordVocabularyURI"),
-                "CM_TopicTerm": citation.get_compound_values(
+                "CM_Keyword": citation_block.get_subfield_values("keyword", "keywordValue"),
+                "CM_KeywordVocab": citation_block.get_subfield_values(
+                    "keyword", "keywordVocabulary"
+                ),
+                "CM_KeywordURI": citation_block.get_subfield_values(
+                    "keyword", "keywordVocabularyURI"
+                ),
+                "CM_TopicTerm": citation_block.get_subfield_values(
                     "topicClassification", "topicClassValue"
                 ),
-                "CM_TopicVocab": citation.get_compound_values(
+                "CM_TopicVocab": citation_block.get_subfield_values(
                     "topicClassification", "topicClassVocab"
                 ),
-                "CM_TopicURL": citation.get_compound_values(
+                "CM_TopicURL": citation_block.get_subfield_values(
                     "topicClassification", "topicClassVocabURI"
                 ),
-                "CM_PubCit": citation.get_compound_values("publication", "publicationCitation"),
-                "CM_PubIDType": citation.get_compound_values("publication", "publicationIDType"),
-                "CM_PubID": citation.get_compound_values("publication", "publicationIDNumber"),
-                "CM_PubURL": citation.get_compound_values("publication", "publicationURL"),
-                "CM_ProdName": citation.get_compound_values("producer", "producerName"),
-                "CM_ProdAff": citation.get_compound_values("producer", "producerAffiliation"),
-                "CM_ProdAbbrev": citation.get_compound_values("producer", "producerAbbreviation"),
-                "CM_ProdURL": citation.get_compound_values("producer", "producerURL"),
-                "CM_ProdLogo": citation.get_compound_values("producer", "producerLogoURL"),
-                "CM_ContribName": citation.get_compound_values("contributor", "contributorName"),
-                "CM_ContribType": citation.get_compound_values("contributor", "contributorType"),
-                "CM_FundingAgency": citation.get_compound_values(
+                "CM_PubCit": citation_block.get_subfield_values(
+                    "publication", "publicationCitation"
+                ),
+                "CM_PubIDType": citation_block.get_subfield_values(
+                    "publication", "publicationIDType"
+                ),
+                "CM_PubID": citation_block.get_subfield_values(
+                    "publication", "publicationIDNumber"
+                ),
+                "CM_PubURL": citation_block.get_subfield_values("publication", "publicationURL"),
+                "CM_ProdName": citation_block.get_subfield_values("producer", "producerName"),
+                "CM_ProdAff": citation_block.get_subfield_values("producer", "producerAffiliation"),
+                "CM_ProdAbbrev": citation_block.get_subfield_values(
+                    "producer", "producerAbbreviation"
+                ),
+                "CM_ProdURL": citation_block.get_subfield_values("producer", "producerURL"),
+                "CM_ProdLogo": citation_block.get_subfield_values("producer", "producerLogoURL"),
+                "CM_ContribName": citation_block.get_subfield_values(
+                    "contributor", "contributorName"
+                ),
+                "CM_ContribType": citation_block.get_subfield_values(
+                    "contributor", "contributorType"
+                ),
+                "CM_FundingAgency": citation_block.get_subfield_values(
                     "grantNumber", "grantNumberAgency"
                 ),
-                "CM_FundingID": citation.get_compound_values("grantNumber", "grantNumberValue"),
-                "CM_DisName": citation.get_compound_values("distributor", "distributorName"),
-                "CM_DisAff": citation.get_compound_values("distributor", "distributorAffiliation"),
-                "CM_DisAbbrev": citation.get_compound_values(
+                "CM_FundingID": citation_block.get_subfield_values(
+                    "grantNumber", "grantNumberValue"
+                ),
+                "CM_DisName": citation_block.get_subfield_values("distributor", "distributorName"),
+                "CM_DisAff": citation_block.get_subfield_values(
+                    "distributor", "distributorAffiliation"
+                ),
+                "CM_DisAbbrev": citation_block.get_subfield_values(
                     "distributor", "distributorAbbreviation"
                 ),
-                "CM_DisURL": citation.get_compound_values("distributor", "distributorURL"),
-                "CM_DisLogoURL": citation.get_compound_values("distributor", "distributorLogoURL"),
-                "CM_TimeStart": citation.get_compound_values(
+                "CM_DisURL": citation_block.get_subfield_values("distributor", "distributorURL"),
+                "CM_DisLogoURL": citation_block.get_subfield_values(
+                    "distributor", "distributorLogoURL"
+                ),
+                "CM_TimeStart": citation_block.get_subfield_values(
                     "timePeriodCovered", "timePeriodCoveredStart"
                 ),
-                "CM_TimeEnd": citation.get_compound_values(
+                "CM_TimeEnd": citation_block.get_subfield_values(
                     "timePeriodCovered", "timePeriodCoveredEnd"
                 ),
-                "CM_CollectionStart": citation.get_compound_values(
+                "CM_CollectionStart": citation_block.get_subfield_values(
                     "dateOfCollection", "dateOfCollectionStart"
                 ),
-                "CM_CollectionEnd": citation.get_compound_values(
+                "CM_CollectionEnd": citation_block.get_subfield_values(
                     "dateOfCollection", "dateOfCollectionEnd"
                 ),
-                "CM_SeriesName": citation.get_compound_values("series", "seriesName"),
-                "CM_SeriesInfo": citation.get_compound_values("series", "seriesInformation"),
-                "CM_SoftwareName": citation.get_compound_values("software", "softwareName"),
-                "CM_SoftwareVers": citation.get_compound_values("software", "softwareVersion"),
+                "CM_SeriesName": citation_block.get_subfield_values("series", "seriesName"),
+                "CM_SeriesInfo": citation_block.get_subfield_values("series", "seriesInformation"),
+                "CM_SoftwareName": citation_block.get_subfield_values("software", "softwareName"),
+                "CM_SoftwareVers": citation_block.get_subfield_values(
+                    "software", "softwareVersion"
+                ),
                 # Metadata blocks presence
                 **self._get_metadata_blocks_usage(dataset_meta),
                 # Permission role counts
