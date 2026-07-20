@@ -151,19 +151,21 @@ def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) ->
         str(k): v for k, v in permission_metadata.items()
     }  # Convert keys to str for JSON serialization
 
-    for _, dataset_meta in meta_dict.items():
-        dataset_id = dataset_meta.get("id")
+    meta_dict_copy = meta_dict.copy()  # Create a copy to avoid modifying the original dictionary
+
+    for dataset_id in meta_dict:
+        logger.debug(f"Processing dataset ID: {dataset_id}; type: {type(dataset_id)}")
         permissions = permission_metadata.get(str(dataset_id))
         if permissions is not None:
-            dataset_meta["permissions"] = permissions
+            meta_dict_copy[dataset_id]["permissions"] = permissions
         else:
             logger.debug(f"No permission metadata found for dataset ID {dataset_id}.")
 
     # Add dataset_meta['permissions'] = None to standardize the output for datasets without permissions
-    for dataset_meta in meta_dict.values():
+    for dataset_meta in meta_dict_copy.values():
         dataset_meta.setdefault("permissions", None)
 
-    return meta_dict
+    return meta_dict_copy
 
 
 def get_total_count_from_response(response: dict) -> int:

@@ -95,7 +95,7 @@ class MetaDataCrawler:
             for item in response.json().get("data", {}).get("items", [])
         ]
 
-    async def get_dataset_metadata(self, dataset_pids: list, version: str | None = None) -> dict:
+    async def get_dataset_metadata(self, dataset_ids: list, version: str | None = None) -> dict:
         """Get the metadata of a dataset using the dataset Native API endpoint.
 
         Parameters
@@ -107,49 +107,14 @@ class MetaDataCrawler:
         -------
             dict: A dictionary mapping dataset IDs to their metadata
         """
-        url_list: list = [
-            Endpoints.ds_meta_exporters(
-                persistent_id=dataset_pid, exporter="dataverse_json", version=version
-            )
-            for dataset_pid in dataset_pids
-        ]
+        url_list: list = [Endpoints.ds_json(dataset_id=id, version=version) for id in dataset_ids]
 
         response = await self.client.async_get(url_list)
 
         return {
             dataset_pid: res.json()
-            for dataset_pid, res in zip(dataset_pids, response, strict=False)
+            for dataset_pid, res in zip(dataset_ids, response, strict=False)
             if res is not None
-        }
-
-    async def get_oaiore_metadata(self, pids: list, version: str = "latest") -> dict:
-        """Get the metadata of datasets in OAI_ORE format.
-
-        Notes
-        -----
-        This is mainly for getting the path of the dataset, which is not available in the dataset JSON (dataverse_json) metadata.
-
-        docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
-
-        Parameters
-        ----------
-            pids (list): A list of dataset (entity) IDs
-            version (str): The version of the dataset
-
-        Returns
-        -------
-            dict: A dictionary mapping dataset IDs to their OAI_ORE metadata
-        """  # ruff:ignore[doc-line-too-long]
-        url_list = [
-            Endpoints.ds_meta_exporters(persistent_id=str(pid), exporter="OAI_ORE") for pid in pids
-        ]
-
-        response = await self.client.async_get(url_list)
-
-        return {
-            pid: res.json()
-            for pid, res in zip(pids, response, strict=False)
-            if res is not None and res.content
         }
 
     async def get_dataset_permissions(self, dataset_ids: list) -> dict:

@@ -15,7 +15,6 @@ from dvmeta.crawler.utils import (
     get_pids_from_search_response,
     get_start_parameters,
     get_total_count_from_response,
-    merge_oaiore_to_meta_dict,
     merge_permission_to_meta_dict,
     parse_search_response,
 )
@@ -57,7 +56,7 @@ class CLIState:
 
 
 @app.callback()
-def main(  # noqa: PLR0913
+def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     ctx: typer.Context,
     auth: str = TyperOptions.auth,
     report: bool = TyperOptions.report,
@@ -172,18 +171,11 @@ def crawl_metadata(ctx: typer.Context) -> None:
     with spinner():
         crawler = state.crawler
         dataset_ids = state.dataset_ids
-        pids = list(get_pids_from_search_response(state.crawl_result.dataset_records).values())
+        # pids = list(get_pids_from_search_response(state.crawl_result.dataset_records).values())
 
-        async def _fetch_all() -> tuple[dict, dict]:
-            return await asyncio.gather(
-                crawler.get_dataset_metadata(pids, version=state.config.version),
-                crawler.get_oaiore_metadata(pids),
-            )
-
-        meta_dict, oaiore_metadata = asyncio.run(_fetch_all())
-
-        # Merge OAI-ORE metadata into the meta_dict
-        state.crawl_result.meta_dict = merge_oaiore_to_meta_dict(meta_dict, oaiore_metadata)
+        state.crawl_result.meta_dict = asyncio.run(
+            crawler.get_dataset_metadata(dataset_ids)  # version=state.config.version)
+        )
 
         if not state.skip_export:
             export_json(state.crawl_result.meta_dict, export_type="ds_metadata")

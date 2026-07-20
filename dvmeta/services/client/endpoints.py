@@ -1,5 +1,7 @@
 """The dataverse API endpoints used in the crawler."""
 
+from typing import Literal
+
 
 class Endpoints:
     """Endpoints for the Dataverse API."""
@@ -17,18 +19,18 @@ class Endpoints:
         return "api/search"
 
     @staticmethod
-    def ds_json(dataset_id: str | int, draft: bool = False) -> str:
+    def ds_json(
+        dataset_id: str, version: Literal["latest", "latest-published", "draft"] = "latest"
+    ) -> str:
         """Dataset JSON representation endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
 
-        Note: This endpoint is currently not used. Just for keeping and future use.
-
         Parameters
         ----------
-        draft : bool, optional
-            By default, False.
-        dataset_id : str | int
+        dataset_id : str
+        version : Literal["latest", "latest-published", "draft"], optional
+            By default, "latest".
 
         Returns
         -------
@@ -36,8 +38,13 @@ class Endpoints:
         """
         url = f"api/datasets/{dataset_id}"
 
-        if draft:
-            url += "/:draft"
+        # Handle inputs if version is not in the allowed values
+        if version not in {"latest", "latest-published", "draft"}:
+            version = "latest"
+
+        if version != "latest":
+            url += f"/versions/:{version}"
+
         return url
 
     @staticmethod
@@ -55,30 +62,6 @@ class Endpoints:
         str
         """
         return f"api/datasets/{dataset_id}/assignments"
-
-    @staticmethod
-    def ds_meta_exporters(
-        persistent_id: str, exporter: str = "dataverse_json", version: str | None = None
-    ) -> str:
-        """Dataset metadata exporters endpoint.
-
-        Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
-
-        Parameters
-        ----------
-        version : str | None, optional
-            By default, None.
-        exporter : str, optional
-            By default, "dataverse_json".
-        persistent_id : str
-
-        Returns
-        -------
-        str
-        """
-        if version is not None and isinstance(version, str):
-            return f"api/datasets/export?exporter={exporter}&persistentId={persistent_id}&version=:{version}"
-        return f"api/datasets/export?exporter={exporter}&persistentId={persistent_id}"
 
     @staticmethod
     def dv_json(dataverse_id: str) -> str:
