@@ -5,6 +5,8 @@ import typer
 from dvmeta.cli.validation import validate_version_type
 from dvmeta.models.log_level import LogLevel
 
+# ruff:file-ignore[boolean-positional-value-in-call]
+
 
 class TyperOptions:
     """Helper class for Typer options with types and defaults."""
@@ -17,7 +19,9 @@ class TyperOptions:
         hide_input=True,
         envvar="API_TOKEN",
     )
-    report: bool = typer.Option(True, "--report/--no-report", "-r", help="Output summary report file of the crawl.")
+    report: bool = typer.Option(
+        True, "--report/--no-report", "-r", help="Output summary report file of the crawl."
+    )
     collection_alias: str = typer.Option(
         ...,
         "--collection_alias",
@@ -31,7 +35,7 @@ class TyperOptions:
         "--version",
         "-v",
         help=(
-            'The dataset version to crawl. Options are:'
+            "The dataset version to crawl. Options are:"
             '  "draft" - the draft version, if any'
             '  "latest" - either a draft (if exists) or the latest published version'
             '  "latest-published" - the latest published version'
@@ -50,7 +54,7 @@ class TyperOptions:
     log_level: LogLevel = typer.Option(
         None,
         "--log-level",
-        help=f'The logging level for console and file output. Options are: {", ".join(LogLevel.__members__.keys())}. Defaults to LOG_LEVEL in .env, else INFO.',
+        help=f"The logging level for console and file output. Options are: {', '.join(LogLevel.__members__.keys())}. Defaults to LOG_LEVEL in .env, else INFO.",
     )
     metadata_source: str = typer.Option(
         None,
@@ -75,4 +79,10 @@ class TyperOptions:
         "--timestamp/--no-timestamp",
         "-ts",
         help="Whether to include timestamp in the exported JSON filenames.",
+    )
+    permission: bool = typer.Option(
+        False,
+        "--permission/--no-permission",
+        "-p",
+        help="Whether to include permission metadata in the exported JSON files. This will make additional API calls to fetch the permission metadata for each dataset.",
     )

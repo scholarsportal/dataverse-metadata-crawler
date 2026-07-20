@@ -28,6 +28,8 @@ from dvmeta.services.report_generation import write_to_report
 from dvmeta.services.spreadsheet import Spreadsheet
 from dvmeta.services.timestamp import Timestamps, get_current_time
 
+# ruff:file-ignore[boolean-type-hint-positional-argument]
+
 setup_logging()  # Initialize logging at the module level to ensure it's set up before any commands are run
 
 app = typer.Typer()
@@ -67,6 +69,7 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     publication_status: str = TyperOptions.publication_status,
     semaphore_limit: int = TyperOptions.semaphore_limit,
     timestamp_enabled: bool = TyperOptions.timestamp_enabled,
+    permission: bool = TyperOptions.permission,
 ) -> None:
     """Step 1: load config and validate inputs.
 
@@ -96,6 +99,7 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     state.config = config
     state.report = report
     state.publication_status = publication_status
+    state.permission = permission
     state.crawl_result = CrawlResult()
     ctx.obj = state
 
@@ -242,7 +246,7 @@ def run_all(ctx: typer.Context) -> None:
     """Run the full crawl process: search -> crawl metadata -> crawl permissions -> export spreadsheet.
 
     Export the metadata (with permissions if available) to JSON and spreadsheet.
-    """
+    """  # ruff:ignore[doc-line-too-long]
     state = get_state(ctx)
     state.skip_export = True
     report = state.report
@@ -250,7 +254,8 @@ def run_all(ctx: typer.Context) -> None:
 
     search(ctx)
     crawl_metadata(ctx)
-    crawl_permission(ctx)
+    if state.permission:
+        crawl_permission(ctx)
 
     assert state.crawl_result is not None
     if state.crawl_result.permission_dict:

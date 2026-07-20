@@ -99,10 +99,10 @@ def get_collection_files_size(dictionary: dict) -> int | str:
     -------
     int | str
         The total size of collection files in bytes if the structure is correct and files are present, otherwise 'Error'.
-    """  # noqa: W505
+    """  # ruff:ignore[doc-line-too-long]
     total_size = 0
 
-    for _, dataset in dictionary.items():
+    for dataset in dictionary.values():
         ds_size = get_data_files_size(dataset)
         total_size += ds_size if isinstance(ds_size, int) else 0
     return total_size
@@ -118,7 +118,7 @@ def get_data_files_count(dictionary: dict) -> int | str:
     Returns
     -------
     int | str
-        The total number of data files if the structure is correct and files are present, otherwise 'Error'.
+        The total number of data files, otherwise 'Error'.
     """
     ds_version = dictionary.get("datasetVersion", {})
     if "files" in ds_version:
@@ -138,10 +138,10 @@ def get_collection_files_count(dictionary: dict) -> int | str:
     -------
     int | str
         A dictionary containing dataset metadata, expected to have a structure where the latest version's files can be accessed via '{dataset_id}.data.datasetVersion.files'.
-    """  # noqa: W505
+    """  # ruff:ignore[doc-line-too-long]
     total_count = 0
 
-    for _, dataset in dictionary.items():
+    for dataset in dictionary.values():
         ds_count = get_data_files_count(dataset)
         total_count += ds_count if isinstance(ds_count, int) else 0
     return total_count
