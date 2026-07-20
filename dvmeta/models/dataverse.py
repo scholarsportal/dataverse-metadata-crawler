@@ -2,9 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel
-from pydantic import Field
-
+from pydantic import BaseModel, Field
 
 # ruff: noqa: N815
 
@@ -19,7 +17,7 @@ class DvResponse(BaseModel):
 class DatasetVersionTags(BaseModel):
     """Permitted dataset version type."""
 
-    version: Literal['draft', 'latest', 'latest-published'] | float | int
+    version: Literal["draft", "latest", "latest-published"] | float | int
 
 
 class DatasetField(BaseModel):
@@ -27,9 +25,9 @@ class DatasetField(BaseModel):
 
     typeName: str
     typeClass: Literal[
-        'primitive',
-        'compound',
-        'controlledVocabulary',
+        "primitive",
+        "compound",
+        "controlledVocabulary",
     ]
     multiple: bool = False
     value: object
@@ -136,7 +134,7 @@ class CitationAccessor:
 
             if child:
                 result.append(
-                    child.get('value'),
+                    child.get("value"),
                 )
 
         return result

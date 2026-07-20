@@ -36,20 +36,20 @@ class MetaDataCrawler:
 
         return response.json()
 
-    def get_search_result(
-        self,
-        base_search_params: DataverseSearchParams,
-    ) -> dict:
+    def get_search_result(self, base_search_params: DataverseSearchParams) -> dict:
         """Get the dataset records in the Dataverse collection (recursively, including all the children).
 
         Uses the Search API.
 
-        Args:
-            base_search_params (DataverseSearchParams | None): The base search parameters for the API call.
+        Parameters
+        ----------
+        base_search_params : DataverseSearchParams
+            The base search parameters for the API call.
 
-        Returns:
-            dict: A dictionary containing the search results
-        """  # noqa: W505, E501
+        Returns
+        -------
+        dict: The search result from the Dataverse Search API.
+        """
         search_url = Endpoints.search()
 
         base_search_params.per_page = 1
@@ -66,74 +66,101 @@ class MetaDataCrawler:
 
         Uses the Search API.
 
-        Args:
+        Parameters
+        ----------
             start_parameters (tuple[int]): A tuple of starting indices for the search results.
             search_params (DataverseSearchParams): The search parameters for the API call.
 
-        Returns:
+        Returns
+        -------
             list: A list of dataset metadata dictionaries
-        """  # noqa: W505, E501
+        """  # noqa: W505
         search_url = Endpoints.search()
 
         search_params.per_page = 1000
 
         url_list = [
             httpx2.Request(
-                'GET',
+                "GET",
                 search_url,
-                params=search_params.model_copy(update={'start': start}).to_params(),
+                params=search_params.model_copy(update={"start": start}).to_params(),
             )
             for start in start_parameters
         ]
 
         responses = await self.client.async_get(url_list)
-        return [item for response in responses for item in response.json().get('data', {}).get('items', [])]
+        return [
+            item
+            for response in responses
+            for item in response.json().get("data", {}).get("items", [])
+        ]
 
     async def get_dataset_metadata(self, dataset_pids: list, version: str | None = None) -> dict:
         """Get the metadata of a dataset using the dataset Native API endpoint.
 
-        Args:
+        Parameters
+        ----------
             dataset_pids (list): A list of dataset persistent IDs (global_id in search API)
             version (str | None): The version of the dataset
 
-        Returns:
+        Returns
+        -------
             dict: A dictionary mapping dataset IDs to their metadata
         """
         url_list: list = [
-            Endpoints.ds_meta_exporters(persistent_id=dataset_pid, exporter='dataverse_json', version=version)
+            Endpoints.ds_meta_exporters(
+                persistent_id=dataset_pid, exporter="dataverse_json", version=version
+            )
             for dataset_pid in dataset_pids
         ]
 
         response = await self.client.async_get(url_list)
 
         return {
-            dataset_pid: res.json() for dataset_pid, res in zip(dataset_pids, response, strict=False) if res is not None
+            dataset_pid: res.json()
+            for dataset_pid, res in zip(dataset_pids, response, strict=False)
+            if res is not None
         }
 
-    async def get_oaiore_metadata(self, pids: list, version: str = 'latest') -> dict:
+    async def get_oaiore_metadata(self, pids: list, version: str = "latest") -> dict:
         """Get the metadata of datasets in OAI_ORE format.
 
-        Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
+        Notes
+        -----
+        This is mainly for getting the path of the dataset, which is not available in the dataset JSON (dataverse_json) metadata.
 
-        Note: This is mainly for getting the path of the dataset, which is not available in the dataset JSON (dataverse_json) metadata.
+        docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
 
-        Args:
+        Parameters
+        ----------
             pids (list): A list of dataset (entity) IDs
             version (str): The version of the dataset
-        """  # noqa: W505, E501
-        url_list = [Endpoints.ds_meta_exporters(persistent_id=str(pid), exporter='OAI_ORE') for pid in pids]
+
+        Returns
+        -------
+            dict: A dictionary mapping dataset IDs to their OAI_ORE metadata
+        """  # noqa: W505
+        url_list = [
+            Endpoints.ds_meta_exporters(persistent_id=str(pid), exporter="OAI_ORE") for pid in pids
+        ]
 
         response = await self.client.async_get(url_list)
 
-        return {pid: res.json() for pid, res in zip(pids, response, strict=False) if res is not None and res.content}
+        return {
+            pid: res.json()
+            for pid, res in zip(pids, response, strict=False)
+            if res is not None and res.content
+        }
 
     async def get_dataset_permissions(self, dataset_ids: list) -> dict:
         """Get the permission metadata of a dataset using the dataset permissions API endpoint.
 
-        Args:
+        Parameters
+        ----------
             dataset_ids (list): A list of dataset (entity) IDs
 
-        Returns:
+        Returns
+        -------
             dict: A dictionary mapping dataset IDs to their permission metadata
         """
         url_list = [Endpoints.ds_permissions(dataset_id) for dataset_id in dataset_ids]
@@ -141,5 +168,7 @@ class MetaDataCrawler:
         response = await self.client.async_get(url_list)
 
         return {
-            dataset_id: res.json() for dataset_id, res in zip(dataset_ids, response, strict=False) if res is not None
+            dataset_id: res.json()
+            for dataset_id, res in zip(dataset_ids, response, strict=False)
+            if res is not None
         }

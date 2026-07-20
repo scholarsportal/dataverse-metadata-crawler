@@ -10,10 +10,11 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/search.html
 
-        Returns:
-            str: The search endpoint
+        Returns
+        -------
+        str
         """
-        return 'api/search'
+        return "api/search"
 
     @staticmethod
     def ds_json(dataset_id: str | int, draft: bool = False) -> str:
@@ -23,17 +24,20 @@ class Endpoints:
 
         Note: This endpoint is currently not used. Just for keeping and future use.
 
-        Args:
-            dataset_id (str | int): The database ID of the dataset
-            draft (bool): Whether to fetch the draft version
+        Parameters
+        ----------
+        draft : bool, optional
+            By default, False.
+        dataset_id : str | int
 
-        Returns:
-            str: The dataset JSON representation endpoint
+        Returns
+        -------
+        str
         """
-        url = f'api/datasets/{dataset_id}'
+        url = f"api/datasets/{dataset_id}"
 
         if draft:
-            url += '/:draft'
+            url += "/:draft"
         return url
 
     @staticmethod
@@ -42,31 +46,37 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#list-role-assignments-in-a-dataset
 
-        Args:
-            dataset_id (str | int): The database ID of the dataset
+        Parameters
+        ----------
+        dataset_id : str | int
 
-        Returns:
-            str: The dataset permissions endpoint
+        Returns
+        -------
+        str
         """
-        return f'api/datasets/{dataset_id}/assignments'
+        return f"api/datasets/{dataset_id}/assignments"
 
     @staticmethod
-    def ds_meta_exporters(persistent_id: str, exporter: str = 'dataverse_json', version: str | None = None) -> str:
+    def ds_meta_exporters(persistent_id: str, exporter: str = "dataverse_json", version: str | None = None) -> str:
         """The dataset metadata exporters endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#export-metadata-of-a-dataset-in-various-formats
 
-        Args:
-            persistent_id (str): The persistent ID of the dataset
-            version (str | None): The version of the dataset
-            exporter (str): The metadata exporter format (e.g., 'dataverse_json', 'OAI_ORE')
+        Parameters
+        ----------
+        version : str | None, optional
+            By default, None.
+        exporter : str, optional
+            By default, "dataverse_json".
+        persistent_id : str
 
-        Returns:
-            str: The dataset metadata exporters endpoint
-        """  # noqa: E501, W505
+        Returns
+        -------
+        str
+        """
         if version is not None and isinstance(version, str):
-            return f'api/datasets/export?exporter={exporter}&persistentId={persistent_id}&version=:{version}'
-        return f'api/datasets/export?exporter={exporter}&persistentId={persistent_id}'
+            return f"api/datasets/export?exporter={exporter}&persistentId={persistent_id}&version=:{version}"
+        return f"api/datasets/export?exporter={exporter}&persistentId={persistent_id}"
 
     @staticmethod
     def dv_json(dataverse_id: str) -> str:
@@ -74,14 +84,15 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#view-a-dataverse-collection
 
-        Args:
-            dataverse_id (str): The database ID or alias of a dataverse collection. Can also be special value `root` for the root collection.
+        Parameters
+        ----------
+        dataverse_id : str
 
-        Returns:
-            str: The dataverse JSON representation endpoint
-
-        """  # noqa: E501, W505
-        return f'api/dataverses/{dataverse_id}'
+        Returns
+        -------
+        str
+        """
+        return f"api/dataverses/{dataverse_id}"
 
     @staticmethod
     def user_info() -> str:
@@ -89,10 +100,11 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-user-information-in-json-format
 
-        Returns:
-            str: The user info endpoint
+        Returns
+        -------
+        str
         """
-        return 'api/users/:me'
+        return "api/users/:me"
 
     @staticmethod
     def version_info() -> str:
@@ -100,7 +112,8 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#show-dataverse-software-version-and-build-number
 
-        Returns:
-            str: The version info endpoint
+        Returns
+        -------
+        str
         """
-        return 'api/info/version'
+        return "api/info/version"

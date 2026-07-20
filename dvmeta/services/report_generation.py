@@ -7,16 +7,14 @@ from loguru import logger
 
 from dvmeta.models.config import Config
 from dvmeta.models.crawl_result import CrawlResult
-from dvmeta.services.dir_manager import ExportDir
-from dvmeta.services.dir_manager import get_dir
-from dvmeta.services.timestamp import Timestamps
-from dvmeta.services.timestamp import get_display_time
-from dvmeta.services.timestamp import get_elapsed_time
-from dvmeta.services.timestamp import get_file_timestamp
-from dvmeta.services.utils import count_key
-from dvmeta.services.utils import get_collection_files_count
-from dvmeta.services.utils import get_collection_files_size
-
+from dvmeta.services.dir_manager import ExportDir, get_dir
+from dvmeta.services.timestamp import (
+    Timestamps,
+    get_display_time,
+    get_elapsed_time,
+    get_file_timestamp,
+)
+from dvmeta.services.utils import count_key, get_collection_files_count, get_collection_files_size
 
 DEFAULT_REPORT_TEMPLATE: str = """--- Summary ---
 Repository base URL: {{ config.base_url }}
@@ -47,17 +45,21 @@ Item checksum (SHA-256): {{ item.checksum }}
 """
 
 
-def write_to_report(  # noqa:  PLR0913
+def write_to_report(
     config: Config,
     timestamps: Timestamps,
     crawl_result: CrawlResult,
 ) -> None:
     """Write the crawl report to a file.
 
-    Args:
-        config (dict): Configuration dictionary
-        timestamps (Timestamps): Timestamps object containing start and end times
-        crawl_result (CrawlResult): Result object containing all crawled data
+    Parameters
+    ----------
+    config : Config
+        Configuration dictionary.
+    timestamps : Timestamps
+        Timestamps object containing start and end times.
+    crawl_result : CrawlResult
+        Result object containing all crawled data.
     """
     report = Template(read_template())
     rendered = report.render(
@@ -74,28 +76,26 @@ def write_to_report(  # noqa:  PLR0913
         json_file_checksum_dict=crawl_result.export_data,
     )
 
-    log_file_path = get_dir(ExportDir.LOG) / f'report_{get_file_timestamp()}.txt'
+    log_file_path = get_dir(ExportDir.LOG) / f"report_{get_file_timestamp()}.txt"
 
-    Path(log_file_path).write_text(rendered, encoding='utf-8')
+    Path(log_file_path).write_text(rendered, encoding="utf-8")
 
-    logger.info(f'The crawl report is saved at: {log_file_path}')
+    logger.info(f"The crawl report is saved at: {log_file_path}")
 
 
-def read_template(template_path: str | Path = 'res/report_template.txt') -> str:
+def read_template(template_path: str | Path = "res/report_template.txt") -> str:
     """Read the crawl report template file from res directory.
 
     TODO: allow this to be set in a config file or command line argument.
 
-    Returns:
-        str: Content of the template file as string
-
-    Raises:
-        FileNotFoundError: If template file doesn't exist
+    Returns
+    -------
+    str
     """
     report_template_path = Path(template_path)
 
     if not report_template_path.is_file():
-        logger.warning(f'Crawl report template file not found at {report_template_path}. Using default template.')
+        logger.warning(f"Crawl report template file not found at {report_template_path}. Using default template.")
         return DEFAULT_REPORT_TEMPLATE
 
-    return report_template_path.read_text(encoding='utf-8')
+    return report_template_path.read_text(encoding="utf-8")

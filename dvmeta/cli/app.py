@@ -11,26 +11,24 @@ from dvmeta.cli.options import TyperOptions
 from dvmeta.cli.utils import spinner
 from dvmeta.cli.validation import validate_connection
 from dvmeta.crawler.crawler import MetaDataCrawler
-from dvmeta.crawler.utils import get_pids_from_search_response
-from dvmeta.crawler.utils import get_start_parameters
-from dvmeta.crawler.utils import get_total_count_from_response
-from dvmeta.crawler.utils import merge_oaiore_to_meta_dict
-from dvmeta.crawler.utils import merge_permission_to_meta_dict
-from dvmeta.crawler.utils import parse_search_response
+from dvmeta.crawler.utils import (
+    get_pids_from_search_response,
+    get_start_parameters,
+    get_total_count_from_response,
+    merge_oaiore_to_meta_dict,
+    merge_permission_to_meta_dict,
+    parse_search_response,
+)
 from dvmeta.models.config import Config
 from dvmeta.models.crawl_result import CrawlResult
 from dvmeta.models.log_level import LogLevel
-from dvmeta.models.search_params import DataverseSearchParams
-from dvmeta.models.search_params import ItemType
+from dvmeta.models.search_params import DataverseSearchParams, ItemType
 from dvmeta.services.custom_logging import setup_logging
-from dvmeta.services.dir_manager import ExportDir
-from dvmeta.services.dir_manager import get_dir
+from dvmeta.services.dir_manager import ExportDir, get_dir
 from dvmeta.services.exporter import export_json
 from dvmeta.services.report_generation import write_to_report
 from dvmeta.services.spreadsheet import Spreadsheet
-from dvmeta.services.timestamp import Timestamps
-from dvmeta.services.timestamp import get_current_time
-
+from dvmeta.services.timestamp import Timestamps, get_current_time
 
 setup_logging()  # Initialize logging at the module level to ensure it's set up before any commands are run
 
@@ -59,7 +57,7 @@ class CLIState:
 
 
 @app.callback()
-def main(  # noqa: PLR0913, PLR0917
+def main(  # noqa: PLR0913
     ctx: typer.Context,
     auth: str = TyperOptions.auth,
     report: bool = TyperOptions.report,
@@ -72,7 +70,10 @@ def main(  # noqa: PLR0913, PLR0917
     semaphore_limit: int = TyperOptions.semaphore_limit,
     timestamp_enabled: bool = TyperOptions.timestamp_enabled,
 ) -> None:
-    """Step 1: load config and validate inputs. Runs before every subcommand."""
+    """Step 1: load config and validate inputs.
+
+    Runs before every subcommand.
+    """
     config = Config()
     log_level = log_level or config.log_level  # CLI flag wins over LOG_LEVEL in .env
     setup_logging(
@@ -85,7 +86,7 @@ def main(  # noqa: PLR0913, PLR0917
 
     config.collection_alias = collection_alias
     config.version = version
-    config.api_token = auth if auth else config.api_token
+    config.api_token = auth or config.api_token
     config.metadata_source = metadata_source
     config.semaphore_limit = semaphore_limit
 
@@ -105,7 +106,7 @@ def get_state(ctx: typer.Context) -> CLIState:
     """Retrieve the CLI state from the Typer context."""
     state = ctx.obj
     if state is None:
-        msg = 'CLI state not initialized'
+        msg = "CLI state not initialized"
         raise typer.BadParameter(msg)
     return state
 
@@ -119,11 +120,13 @@ def search(ctx: typer.Context) -> None:
     assert state.crawl_result is not None
 
     base_search_params = DataverseSearchParams(
-        q='*',
+        q="*",
         type=[ItemType.DATASET],
         subtree=state.config.collection_alias,
         fq=[
-            f'metadataSource:"{state.config.metadata_source}"' if state.config.metadata_source else None,
+            f'metadataSource:"{state.config.metadata_source}"'
+            if state.config.metadata_source
+            else None,
             f'publicationStatus:"{state.publication_status}"' if state.publication_status else None,
         ],
         show_collections=True,
@@ -135,23 +138,23 @@ def search(ctx: typer.Context) -> None:
         state.crawler = MetaDataCrawler(state.config)
 
         # First get the total count of the search result
-        total_count_rsp = state.crawler.get_search_result(
-            base_search_params=base_search_params,
-        )
+        total_count_rsp = state.crawler.get_search_result(base_search_params=base_search_params)
 
         total_count = get_total_count_from_response(total_count_rsp)
 
         start_parameters = get_start_parameters(total_count, per_page=1000)
 
         state.crawl_result.dataset_records = asyncio.run(
-            state.crawler.get_dataverse_ds_records_async(start_parameters, search_params=base_search_params)
+            state.crawler.get_dataverse_ds_records_async(
+                start_parameters, search_params=base_search_params
+            )
         )
 
         state.dataset_ids = parse_search_response(state.crawl_result.dataset_records)
 
         state.crawl_result.dv_dict = state.crawler.get_dataverse_collection_records()
         logger.info(
-            f'Search for datasets in collection "{state.config.collection_alias}" completed. Found {len(state.dataset_ids)} datasets.'  # noqa: E501
+            f'Search for datasets in collection "{state.config.collection_alias}" completed. Found {len(state.dataset_ids)} datasets.'
         )
 
 
@@ -183,7 +186,7 @@ def crawl_metadata(ctx: typer.Context) -> None:
         state.crawl_result.meta_dict = merge_oaiore_to_meta_dict(meta_dict, oaiore_metadata)
 
         if not state.skip_export:
-            export_json(state.crawl_result.meta_dict, export_type='ds_metadata')
+            export_json(state.crawl_result.meta_dict, export_type="ds_metadata")
 
         if state.report:
             state.timestamps.end_time = get_current_time()
@@ -204,7 +207,7 @@ def crawl_permission(ctx: typer.Context) -> None:
 
     with spinner():
         if not state.auth_status:
-            msg = 'API Token authentication failed or not provided. Skipping permission crawl.'
+            msg = "API Token authentication failed or not provided. Skipping permission crawl."
             logger.warning(msg)
             return
         assert state.crawler is not None
@@ -212,13 +215,15 @@ def crawl_permission(ctx: typer.Context) -> None:
         assert state.config is not None
         assert state.crawl_result is not None
 
-        state.crawl_result.permission_dict = asyncio.run(state.crawler.get_dataset_permissions(state.dataset_ids))
+        state.crawl_result.permission_dict = asyncio.run(
+            state.crawler.get_dataset_permissions(state.dataset_ids)
+        )
 
         if not state.skip_export:
-            export_json(state.crawl_result.permission_dict, export_type='permission')
+            export_json(state.crawl_result.permission_dict, export_type="permission")
 
         logger.info(
-            f'Permission metadata for collection "{state.config.collection_alias}" completed. Crawled {len(state.crawl_result.permission_dict)} records.'  # noqa: E501
+            f'Permission metadata for collection "{state.config.collection_alias}" completed. Crawled {len(state.crawl_result.permission_dict)} records.'
         )
 
 
@@ -244,7 +249,10 @@ def export_spreadsheet(ctx: typer.Context) -> None:
 
 @app.command()
 def run_all(ctx: typer.Context) -> None:
-    """Run the full crawl process: search -> crawl metadata -> crawl permissions -> export spreadsheet. Export the metadata (with permissions if available) to JSON and spreadsheet."""  # noqa: E501, W505
+    """Run the full crawl process: search -> crawl metadata -> crawl permissions -> export spreadsheet.
+
+    Export the metadata (with permissions if available) to JSON and spreadsheet.
+    """
     state = get_state(ctx)
     state.skip_export = True
     report = state.report
@@ -260,7 +268,7 @@ def run_all(ctx: typer.Context) -> None:
             state.crawl_result.meta_dict, state.crawl_result.permission_dict
         )
 
-    export_json(state.crawl_result.meta_dict, export_type='ds_metadata')
+    export_json(state.crawl_result.meta_dict, export_type="ds_metadata")
     export_spreadsheet(ctx)
 
     if report:
@@ -270,5 +278,5 @@ def run_all(ctx: typer.Context) -> None:
         write_to_report(state.config, state.timestamps, state.crawl_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app()

@@ -1,7 +1,6 @@
 """Data model for the crawl result."""
 
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 
 
 @dataclass
