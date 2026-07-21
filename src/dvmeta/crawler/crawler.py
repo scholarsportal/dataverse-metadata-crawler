@@ -28,7 +28,13 @@ class MetaDataCrawler:
         self.client = HttpxClient(self.config)
 
     def get_dataverse_collection_records(self) -> dict:
-        """Get the collection metadata of the Dataverse collection."""
+        """Get the collection metadata of the Dataverse collection.
+
+        Returns
+        -------
+        dict: The collection metadata from the Dataverse API.
+
+        """
         url = Endpoints.dv_json(self.config.collection_alias)
         response = self.client.sync_get(url)
 
