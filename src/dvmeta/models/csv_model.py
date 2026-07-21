@@ -1,5 +1,6 @@
 """The column structure of the dataset metadata CSV export."""
 
+from enum import StrEnum
 from typing import TypedDict
 
 
@@ -157,3 +158,14 @@ class DatasetExportRow(TypedDict, total=False):
     DS_Curator: int
     DS_FileDown: int
     DS_Member: int
+
+
+class MetadataBlocks(StrEnum):
+    """Metadata blocks names in Dataverse repository."""
+
+    META_GEO = "geospatial"
+    META_SSHM = "socialscience"
+    META_ASTRO = "astrophysics"
+    META_LS = "biomedical"
+    META_JOURNAL = "journal"
+    META_CWF = "computationalworkflow"

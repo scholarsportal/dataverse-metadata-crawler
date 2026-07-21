@@ -11,7 +11,7 @@ from dv_schema_models.file_instance import FileInstance
 from loguru import logger
 
 from dvmeta.models.config import Config
-from dvmeta.models.csv_model import DatasetExportRow
+from dvmeta.models.csv_model import DatasetExportRow, MetadataBlocks
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
@@ -92,20 +92,6 @@ class Spreadsheet:
         if subject_list:
             return {key: value in subject_list for key, value in subject_map.items()}
         return dict.fromkeys(subject_map, False)
-
-    @staticmethod
-    def _get_metadata_blocks_usage(dataset_meta: dict) -> dict:
-        """Get metadata blocks usage."""
-        metadata_block_map = {
-            "Meta_Geo": "geospatial",
-            "Meta_SSHM": "socialscience",
-            "Meta_Astro": "astrophysics",
-            "Meta_LS": "biomedical",
-            "Meta_Journal": "journal",
-            "Meta_CWF": "computationalworkflow",
-        }
-        metadata_blocks = dataset_meta.get("datasetVersion", {}).get("metadataBlocks", {})
-        return {key: value in metadata_blocks for key, value in metadata_block_map.items()}
 
     @staticmethod
     def _parse_permission_values(dataset_meta: dict) -> dict:
@@ -279,6 +265,30 @@ class Spreadsheet:
                 "CM_OriginSources": citation_block.get_value("originOfSources") or "",
                 "CM_CharSources": citation_block.get_value("characteristicOfSources") or "",
                 "CM_DocSources": citation_block.get_value("accessToSources") or "",
+                "Meta_Geo": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_GEO)
+                )
+                is not None,
+                "Meta_SSHM": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_SSHM)
+                )
+                is not None,
+                "Meta_Astro": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_ASTRO)
+                )
+                is not None,
+                "Meta_LS": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_LS)
+                )
+                is not None,
+                "Meta_Journal": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_JOURNAL)
+                )
+                is not None,
+                "Meta_CWF": loaded_dataset.data.latestVersion.metadataBlocks.get(
+                    str(MetadataBlocks.META_CWF)
+                )
+                is not None,
                 # Citation — compound fields (extract specific child values)
                 "CM_Agency": citation_block.get_subfield_values("otherId", "otherIdAgency"),
                 "CM_ID": citation_block.get_subfield_values("otherId", "otherIdValue"),
@@ -377,8 +387,6 @@ class Spreadsheet:
                 "CM_SoftwareVers": citation_block.get_subfield_values(
                     "software", "softwareVersion"
                 ),
-                # Metadata blocks presence
-                **self._get_metadata_blocks_usage(dataset_meta),
                 # Permission role counts
                 **self._parse_permission_values(dataset_meta),
             }
