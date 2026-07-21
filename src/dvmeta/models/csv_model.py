@@ -207,3 +207,15 @@ class DatasetSubjects(StrEnum):
             return cls(value).name
         except ValueError:
             return None
+
+
+class RoleAssignmentsTypes(StrEnum):
+    """Role assignments types in Dataverse repository."""
+
+    DS_Collab = "collaborator"
+    DS_Admin = "admin"
+    DS_Contrib = "contributor"
+    DS_ContribPlus = "fullContributor"
+    DS_Curator = "curator"
+    DS_FileDown = "fileDownloader"
+    DS_Member = "member"
