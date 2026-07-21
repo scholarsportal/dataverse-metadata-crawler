@@ -21,7 +21,7 @@ class DatasetExportRow(TypedDict, total=False):
     CreateTime: str
 
     FileCount: int | str
-    FileSize: int
+    FileSize: int | None
     FileSize_normalized: float
 
     License: str

@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 
 import jmespath
 from dv_schema_models.dataset_instance import load_dataset
+from dv_schema_models.file_instance import FileInstance
 from loguru import logger
 
 from dvmeta.models.config import Config
@@ -232,6 +233,7 @@ class Spreadsheet:
                 )
                 continue
             subject_list: list = citation_block.get_value("subject") or []
+            files_list = loaded_dataset.data.latestVersion.files or []
 
             row: DatasetExportRow = {
                 "DatasetTitle": citation_block.get_value("title") or "",
@@ -252,8 +254,8 @@ class Spreadsheet:
                 "ReleaseTime": loaded_dataset.data.datasetVersion.releaseTime,
                 "CreateTime": loaded_dataset.data.datasetVersion.createTime,
                 "Version": str(self._get_dataset_version(dataset_meta)),
-                "FileCount": get_data_files_count(dataset_meta),
-                "FileSize": get_data_files_size(dataset_meta),
+                "FileCount": len(files_list),
+                "FileSize": FileInstance.sum_field(files_list, "filesize") or 0,
                 "FileSize_normalized": convert_size(get_data_files_size(dataset_meta)),
                 "License": license_info.get("name")
                 if (license_info := getattr(loaded_dataset.data.datasetVersion, "license", None))
