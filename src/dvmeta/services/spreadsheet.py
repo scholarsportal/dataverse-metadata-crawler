@@ -14,12 +14,7 @@ from dvmeta.models.config import Config
 from dvmeta.models.csv_model import DatasetExportRow
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
-from dvmeta.services.utils import (
-    convert_size,
-    gen_checksum,
-    get_data_files_count,
-    get_data_files_size,
-)
+from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
 
 
 class Spreadsheet:
@@ -159,13 +154,33 @@ class Spreadsheet:
         }
 
     def _get_column_order(self, row_keys: list[str]) -> list[str]:
-        """Get column order."""
-        order_list = Path(self.spreadsheet_order_file_path).read_text(encoding="utf-8").splitlines()
+        """Get column order.
+
+        Parameters
+        ----------
+        row_keys : list[str]
+
+        Returns
+        -------
+        list[str]
+
+        """
+        if Path(self.spreadsheet_order_file_path).exists():
+            order_list = (
+                Path(self.spreadsheet_order_file_path).read_text(encoding="utf-8").splitlines()
+            )
+        else:
+            logger.warning(
+                f"Spreadsheet order file not found at {self.spreadsheet_order_file_path}. "
+                "Using default column order."
+            )
+            order_list = list(DatasetExportRow.__annotations__.keys())
+
         valid_columns = [col for col in order_list if col in row_keys]
         return valid_columns + [col for col in row_keys if col not in valid_columns]
 
     @staticmethod
-    def get_dataset_path(ds_metadata: dict, dataset_title: str = "") -> str:
+    def get_dataset_path(ds_metadata: dict, dataset_title: str = "") -> str | None:
         """Get the dataset path from a nested isPartOf chain.
 
         Parameters
