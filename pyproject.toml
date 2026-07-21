@@ -31,7 +31,7 @@ dependencies = [
 
 [project.scripts]  # https://docs.astral.sh/uv/concepts/projects/config/#command-line-interfaces
 dataverse-metadata-crawler = "dvmeta.cli.app:app"
-dvmeta = "dvmeta.cli.app:app"
+dvmeta = "dvmeta.app:app"
 
 [project.urls]  # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
 homepage = "https://github.com/kenlhlui/dataverse-metadata-crawler"
