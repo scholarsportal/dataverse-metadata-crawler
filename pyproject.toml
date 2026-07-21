@@ -1,6 +1,6 @@
-# [build-system]  # https://docs.astral.sh/uv/concepts/build-backend/
-# requires = ["uv_build>=0.9.18,<0.10.0"]
-# build-backend = "uv_build"
+[build-system]  # https://docs.astral.sh/uv/concepts/build-backend/
+requires = ["uv_build>=0.11.30,<0.12"]
+build-backend = "uv_build"
 
 [project]  # https://packaging.python.org/en/latest/specifications/pyproject-toml/
 name = "dataverse-metadata-crawler"
@@ -27,7 +27,8 @@ dependencies = [
 ]
 
 [project.scripts]  # https://docs.astral.sh/uv/concepts/projects/config/#command-line-interfaces
-dataverse-metadata-crawler = "daatverse_metadata_crawler.cli:app"
+dataverse-metadata-crawler = "dvmeta.cli.app:app"
+dvmeta = "dvmeta.cli.app:app"
 
 [project.urls]  # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
 homepage = "https://github.com/kenlhlui/dataverse-metadata-crawler"

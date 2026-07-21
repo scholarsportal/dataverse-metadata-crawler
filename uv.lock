@@ -346,7 +346,7 @@ toml = [
 [[package]]
 name = "dataverse-metadata-crawler"
 version = "0.1.6"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "asyncio" },
     { name = "dv-schema-models" },
