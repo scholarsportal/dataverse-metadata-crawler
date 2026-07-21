@@ -38,25 +38,6 @@ class Spreadsheet:
         return result
 
     @staticmethod
-    def _get_data_files_count(dictionary: dict) -> int | str:
-        """Get data files count."""
-        latest_version = dictionary.get("datasetVersion", {})
-        if "files" in latest_version:
-            return len(jmespath.search("datasetVersion.files", dictionary))
-        return "Error"
-
-    @staticmethod
-    def _get_restricted_data_files_count(dictionary: dict) -> int | str:
-        """Get restricted data files count."""
-        latest_version = dictionary.get("datasetVersion", {})
-        if "files" in latest_version:
-            data_files_count: list = jmespath.search(
-                "datasetVersion.files[?restricted==`true`]", dictionary
-            )
-            return len(data_files_count) if data_files_count else 0
-        return "Error"
-
-    @staticmethod
     def _get_datafile_meta_usage(dictionary: dict) -> dict:
         """Get datafile meta usage."""
         if dictionary.get("datasetVersion", {}).get("files"):
@@ -232,9 +213,6 @@ class Spreadsheet:
         for dataset_meta in meta_dict.values():
             try:
                 loaded_dataset = load_dataset(dataset_meta)
-                logger.debug(
-                    f"loaded dataset: {loaded_dataset.data.datasetVersion.datasetPersistentId}"
-                )
             except Exception as e:
                 logger.error(f"Failed to load dataset: {e}")
                 continue
@@ -275,7 +253,7 @@ class Spreadsheet:
                 "License": license_info.get("name")
                 if (license_info := getattr(loaded_dataset.data.datasetVersion, "license", None))
                 else "",
-                "RestrictedFiles": self._get_restricted_data_files_count(dataset_meta),
+                "RestrictedFiles": FileInstance.list_field(files_list, "restricted").count(True),
                 "TermsOfUse": loaded_dataset.data.datasetVersion.termsOfUse or "",
                 "RequestAccess": loaded_dataset.data.datasetVersion.fileAccessRequest,
                 "TermsAccess": loaded_dataset.data.datasetVersion.termsOfAccess or "",
