@@ -210,7 +210,7 @@ class DatasetSubjects(StrEnum):
 
 
 class RoleAssignmentsTypes(StrEnum):
-    """Role assignments types in Dataverse repository."""
+    """Role assignments types with their _roleAlias in Dataverse repository."""
 
     DS_Collab = "collaborator"
     DS_Admin = "admin"

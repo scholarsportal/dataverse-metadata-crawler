@@ -7,10 +7,16 @@ from urllib.parse import urljoin
 
 from dv_schema_models.dataset_instance import load_dataset
 from dv_schema_models.file_instance import FileInstance
+from dv_schema_models.role_assignments import RoleAssignments, load_role_assignments
 from loguru import logger
 
 from dvmeta.models.config import Config
-from dvmeta.models.csv_model import DatasetExportRow, DatasetSubjects, MetadataBlocks
+from dvmeta.models.csv_model import (
+    DatasetExportRow,
+    DatasetSubjects,
+    MetadataBlocks,
+    RoleAssignmentsTypes,
+)
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
@@ -73,31 +79,15 @@ class Spreadsheet:
         return subjects
 
     @staticmethod
-    def _parse_permission_values(dataset_meta: dict) -> dict:
+    def _parse_permission_values(role_assignments: RoleAssignments) -> dict:
         """Parse permission values."""
-        permission_info = dataset_meta.get("permissions", {})
-        if permission_info.get("status") != "OK":
-            return {
-                "DS_Permission": False,
-                "DS_Collab": "NA",
-                "DS_Admin": "NA",
-                "DS_Contrib": "NA",
-                "DS_ContribPlus": "NA",
-                "DS_Curator": "NA",
-                "DS_FileDown": "NA",
-                "DS_Member": "NA",
-            }
-        data = permission_info.get("data") or []
-        return {
-            "DS_Permission": True,
-            "DS_Collab": len(data),
-            "DS_Admin": len([p for p in data if p.get("_roleAlias") == "admin"]),
-            "DS_Contrib": len([p for p in data if p.get("_roleAlias") == "contributor"]),
-            "DS_ContribPlus": len([p for p in data if p.get("_roleAlias") == "fullContributor"]),
-            "DS_Curator": len([p for p in data if p.get("_roleAlias") == "curator"]),
-            "DS_FileDown": len([p for p in data if p.get("_roleAlias") == "fileDownloader"]),
-            "DS_Member": len([p for p in data if p.get("_roleAlias") == "member"]),
-        }
+        dictionary = {}
+
+        for role in RoleAssignmentsTypes:
+            count = role_assignments.count_field("roleAlias", role.value)
+            dictionary[f"{role.name}"] = count
+
+        return dictionary
 
     def _get_column_order(self, row_keys: list[str]) -> list[str]:
         """Get column order.
@@ -160,12 +150,13 @@ class Spreadsheet:
         names.insert(0, dataset_title)
         return "/".join(reversed(names))
 
-    def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
+    def make_csv_file(self, meta_dict: dict, role_assignments_dict: dict) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
         Parameters
         ----------
         meta_dict : dict
+        role_assignments_dict : dict
 
         Returns
         -------
@@ -181,6 +172,17 @@ class Spreadsheet:
             except Exception as e:
                 logger.error(f"Failed to load dataset: {e}")
                 continue
+
+            try:
+                role_assignments = load_role_assignments(
+                    role_assignments_dict[loaded_dataset.data.id]
+                )
+            except Exception:
+                logger.warning(
+                    f"No role assignments found for dataset ID {loaded_dataset.data.id}. "
+                    "Using empty role assignments."
+                )
+                role_assignments = RoleAssignments(status="empty", data=[])
 
             citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
             if citation_block is None:
@@ -366,7 +368,7 @@ class Spreadsheet:
                     "software", "softwareVersion"
                 ),
                 # Permission role counts
-                **self._parse_permission_values(dataset_meta),
+                **self._parse_permission_values(role_assignments),
             }
 
             rows.append(self.serialize_row(row))
