@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from typer import BadParameter
 
 from dvmeta.models.config import Config
-from dvmeta.models.dataverse import DatasetVersionTags
+from dvmeta.models.ds_version_tags import DatasetVersionTags
 from dvmeta.services.client.http import HttpxClient
 
 

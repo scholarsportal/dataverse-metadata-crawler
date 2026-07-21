@@ -13,7 +13,7 @@ Flow:
 import httpx2
 
 from dvmeta.models.config import Config
-from dvmeta.models.dataverse import DatasetVersionTag
+from dvmeta.models.ds_version_tags import DatasetVersionTag
 from dvmeta.models.search_params import DataverseSearchParams
 from dvmeta.services.client.endpoints import Endpoints
 from dvmeta.services.client.http import HttpxClient

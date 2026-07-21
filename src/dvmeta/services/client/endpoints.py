@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, get_args
 
-from dvmeta.models.dataverse import DatasetVersionKeyword
+from dvmeta.models.ds_version_tags import DatasetVersionKeyword
 
 if TYPE_CHECKING:
-    from dvmeta.models.dataverse import DatasetVersionTag
+    from dvmeta.models.ds_version_tags import DatasetVersionTag
 
 
 class Endpoints:
