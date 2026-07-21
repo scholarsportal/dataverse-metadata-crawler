@@ -14,7 +14,6 @@ class HttpxClient:
     def __init__(self, config: Config) -> None:
         """Initialize the class with the configuration settings."""
         self.config = config
-        self.httpx_success_status = 200
         self.semaphore_num = config.semaphore_limit
         self.base_url = config.base_url
 
@@ -62,7 +61,7 @@ class HttpxClient:
         try:
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
                 response = client.get(Endpoints.user_info(), headers=self.header)
-                return response.status_code == self.httpx_success_status
+                return response.is_success
         except (httpx2.HTTPStatusError, httpx2.RequestError):
             return False
 
@@ -76,7 +75,7 @@ class HttpxClient:
         try:
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
                 response = client.get(Endpoints.version_info())
-                return response.status_code == self.httpx_success_status
+                return response.is_success
         except (httpx2.HTTPStatusError, httpx2.RequestError):
             return False
 
@@ -97,7 +96,7 @@ class HttpxClient:
             # Create a new client for each request to avoid the "closed client" issue
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
                 response = client.get(url, params=params)
-                return response if response.status_code == self.httpx_success_status else None
+                return response if response.is_success else None
         except (httpx2.HTTPStatusError, httpx2.RequestError):
             return httpx2.Response(
                 status_code=500,  # Server error as a fallback
