@@ -27,7 +27,7 @@ class Endpoints:
 
     @staticmethod
     def ds_json(
-        dataset_id: str, version: DatasetVersionTag = "latest", return_owners: bool = True
+        dataset_id: str, version: DatasetVersionTag = "latest", *, return_owners: bool = True
     ) -> str:
         """Dataset JSON representation endpoint.
 
@@ -37,22 +37,24 @@ class Endpoints:
         ----------
         dataset_id : str
         version : DatasetVersionTag, optional
-            By default, "latest".
+            By default, "latest". Allowed values are "draft", "latest", "latest-published", or a number like "1" or "1.2".
         return_owners : bool, optional
             By default, True. Whether to return the owners of the dataset (hierarchical information).
 
         Returns
         -------
         str
-        """
+        """  # ruff:ignore[doc-line-too-long]
         url = f"api/datasets/{dataset_id}"
 
         # Handle inputs if version is not in the allowed values
         if version not in set(get_args(DatasetVersionKeyword)):
             version = "latest"
 
-        if version != "latest":
+        if version != "latest" and version in DatasetVersionKeyword:
             url += f"/versions/:{version}"
+        elif isinstance(version, int | float):
+            url += f"/versions/{version}"
 
         if return_owners:
             url += "?returnOwners=true"
