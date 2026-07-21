@@ -169,3 +169,30 @@ class MetadataBlocks(StrEnum):
     META_LS = "biomedical"
     META_JOURNAL = "journal"
     META_CWF = "computationalworkflow"
+
+
+class DatasetSubjects(StrEnum):
+    """Dataset subjects in Dataverse repository."""
+
+    CM_Subject_Agri = "Agricultural Sciences"
+    CM_Subject_AH = "Arts and Humanities"
+    CM_Subject_Astro = "Astronomy and Astrophysics"
+    CM_Subject_BM = "Biomedical"
+    CM_Subject_Chem = "Chemistry"
+    CM_Subject_Comp = "Computer Science"
+    CM_Subject_EES = "Earth and Environmental Sciences"
+    CM_Subject_Eng = "Engineering"
+    CM_Subject_Law = "Law"
+    CM_Subject_Math = "Mathematics"
+    CM_Subject_Med = "Medicine"
+    CM_Subject_Phys = "Physics"
+    CM_Subject_SocSci = "Social Sciences"
+    CM_Subject_Other = "Other"
+
+    @classmethod
+    def from_value(cls, value: str) -> str | None:
+        """Return the enum member name for a subject value."""
+        try:
+            return cls(value).name
+        except ValueError:
+            return None

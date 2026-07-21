@@ -5,13 +5,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urljoin
 
-import jmespath
 from dv_schema_models.dataset_instance import load_dataset
 from dv_schema_models.file_instance import FileInstance
 from loguru import logger
 
 from dvmeta.models.config import Config
-from dvmeta.models.csv_model import DatasetExportRow, MetadataBlocks
+from dvmeta.models.csv_model import DatasetExportRow, DatasetSubjects, MetadataBlocks
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
@@ -38,27 +37,6 @@ class Spreadsheet:
         return result
 
     @staticmethod
-    def _get_datafile_meta_usage(dictionary: dict) -> dict:
-        """Get datafile meta usage."""
-        if dictionary.get("datasetVersion", {}).get("files"):
-            file_nested_list = jmespath.search("datasetVersion.files[*]", dictionary)
-            directorylabel_count = len([
-                f for f in file_nested_list if f.get("directoryLabel") is not None
-            ])
-            categories_count = len([
-                f for f in file_nested_list if f.get("dataFile", {}).get("categories") is not None
-            ])
-            description_count = len([
-                f for f in file_nested_list if f.get("dataFile", {}).get("description") is not None
-            ])
-            return {
-                "DF_Hierarchy": directorylabel_count,
-                "DF_Tags": categories_count,
-                "DF_Description": description_count,
-            }
-        return {"DF_Hierarchy": 0, "DF_Tags": 0, "DF_Description": 0}
-
-    @staticmethod
     def _get_dataset_version(dataset_meta: dict) -> float | str:
         """Get dataset version."""
         dataset_version = dataset_meta.get("datasetVersion", {})
@@ -71,27 +49,28 @@ class Spreadsheet:
         return "Error"
 
     @staticmethod
-    def _get_dataset_subjects(subject_list: list) -> dict:
-        """Get dataset subjects."""
-        subject_map = {
-            "CM_Subject_Agri": "Agricultural Sciences",
-            "CM_Subject_AH": "Arts and Humanities",
-            "CM_Subject_Astro": "Astronomy and Astrophysics",
-            "CM_Subject_BM": "Business and Management",
-            "CM_Subject_Chem": "Chemistry",
-            "CM_Subject_Comp": "Computer and Information Science",
-            "CM_Subject_EES": "Earth and Environmental Sciences",
-            "CM_Subject_Eng": "Engineering",
-            "CM_Subject_Law": "Law",
-            "CM_Subject_Math": "Mathematical Sciences",
-            "CM_Subject_Med": "Medicine, Health and Life Sciences",
-            "CM_Subject_Phys": "Physics",
-            "CM_Subject_SocSci": "Social Sciences",
-            "CM_Subject_Other": "Other",
-        }
-        if subject_list:
-            return {key: value in subject_list for key, value in subject_map.items()}
-        return dict.fromkeys(subject_map, False)
+    def _get_dataset_subjects(subject_list: list[str] | None) -> dict[str, bool]:
+        """Get dataset subjects, with the mapped boolean values for each subject.
+
+        Parameters
+        ----------
+        subject_list : list[str] | None
+
+        Returns
+        -------
+        dict[str, bool]: {CM_Subject_<subject>: bool} for each subject in DatasetSubjects.
+
+        """
+        subjects = dict.fromkeys(DatasetSubjects.__members__, False)
+
+        if not subject_list:
+            return subjects
+
+        for subject in subject_list:
+            if key := DatasetSubjects.from_value(subject):
+                subjects[key] = True
+
+        return subjects
 
     @staticmethod
     def _parse_permission_values(dataset_meta: dict) -> dict:
@@ -203,11 +182,9 @@ class Spreadsheet:
                 logger.error(f"Failed to load dataset: {e}")
                 continue
 
-            file_stats = self._get_datafile_meta_usage(dataset_meta)
-
             citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
             if citation_block is None:
-                logger.error(
+                logger.warning(
                     f"Dataset {loaded_dataset.data.datasetVersion.datasetPersistentId} has no citation block, skipping"
                 )
                 continue
@@ -243,9 +220,10 @@ class Spreadsheet:
                 "TermsOfUse": loaded_dataset.data.datasetVersion.termsOfUse or "",
                 "RequestAccess": loaded_dataset.data.datasetVersion.fileAccessRequest,
                 "TermsAccess": loaded_dataset.data.datasetVersion.termsOfAccess or "",
-                "DF_Hierarchy": file_stats["DF_Hierarchy"],
-                "DF_Tags": file_stats["DF_Tags"],
-                "DF_Description": file_stats["DF_Description"],
+                "DF_Hierarchy": FileInstance.list_field(files_list, "directoryLabel") is not None,
+                "DF_Tags": FileInstance.list_field(files_list, "dataFile.description") is not None,
+                "DF_Description": FileInstance.list_field(files_list, "dataFile.categories")
+                is not None,
                 # Citation — simple/primitive fields
                 "CM_Subtitle": citation_block.get_value("subtitle") or "",
                 "CM_AltTitle": citation_block.get_value("alternativeTitle") or [],
@@ -311,7 +289,7 @@ class Spreadsheet:
                 "CM_DescrDate": citation_block.get_subfield_values(
                     "dsDescription", "dsDescriptionDate"
                 ),
-                "CM_Subject": subject_list,
+                "CM_Subject": citation_block.get_value(type_name="subject"),
                 **self._get_dataset_subjects(subject_list),
                 "CM_Keyword": citation_block.get_subfield_values("keyword", "keywordValue"),
                 "CM_KeywordVocab": citation_block.get_subfield_values(
