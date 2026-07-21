@@ -36,54 +36,6 @@ def parse_search_response(
     )  # remove duplicates while preserving order. One dataset might have multiple versions, like DRAFT and PUBLISHED.
 
 
-def extract_path(node: dict, dataset_name: str) -> str:
-    """Walk schema:isPartOf chain from leaf to root, return ordered path.
-
-    Parameters
-    ----------
-    node : dict
-        The current node in the schema:isPartOf chain.
-
-    dataset_name : str
-        The name of the dataset.
-
-    Returns
-    -------
-    str: The ordered path from the root to the dataset.
-
-    """
-    path = []
-    current = node
-    while current:
-        path.append({"name": current.get("schema:name"), "id": current.get("@id")})
-        current = current.get("schema:isPartOf")
-
-    collections_path = "/".join(p["name"] for p in reversed(path))
-
-    return collections_path + "/" + dataset_name
-
-
-def get_path_from_oaiore(oaiore_response: dict) -> str | None:
-    """Extract the dataset path from the OAI_ORE metadata.
-
-    Parameters
-    ----------
-    oaiore_response : dict
-        The OAI_ORE metadata response.
-
-    Returns
-    -------
-    str | None
-        The dataset path if found, otherwise None.
-    """
-    dataset_name = oaiore_response.get("ore:describes", {}).get("schema:name")
-    ispartof = oaiore_response.get("ore:describes", {}).get("schema:isPartOf", [])
-    if not ispartof:
-        return None
-
-    return extract_path(ispartof, dataset_name)
-
-
 def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) -> dict:
     """Merge permission metadata into the meta_dict.
 

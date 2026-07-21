@@ -1,6 +1,7 @@
 """A module to manage the creation of CSV files from metadata dictionaries."""
 
 import csv
+from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -162,6 +163,41 @@ class Spreadsheet:
         valid_columns = [col for col in order_list if col in row_keys]
         return valid_columns + [col for col in row_keys if col not in valid_columns]
 
+    @staticmethod
+    def get_dataset_path(ds_metadata: dict, dataset_title: str = "") -> str:
+        """Get the dataset path from a nested isPartOf chain.
+
+        Parameters
+        ----------
+            ds_metadata (dict): Dataset metadata containing the nested isPartOf chain.
+
+        Returns
+        -------
+            str | None: The dataset path, or None if it cannot be built.
+        """
+        current = ds_metadata.get("data", {}).get("isPartOf")
+        if not isinstance(current, Mapping):
+            return ""
+
+        names: list[str] = []
+
+        while isinstance(current, Mapping):
+            display_name = current.get("displayName")
+            if isinstance(display_name, str) and display_name:
+                names.append(display_name)
+
+            next_node = current.get("isPartOf")
+            if not isinstance(next_node, Mapping):
+                break
+
+            current = next_node
+
+        if not names:
+            return None
+
+        names.insert(0, dataset_title)
+        return "/".join(reversed(names))
+
     def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
@@ -188,8 +224,6 @@ class Spreadsheet:
                 continue
 
             file_stats = self._get_datafile_meta_usage(dataset_meta)
-            file_size = get_data_files_size(dataset_meta)
-            path_info = dataset_meta.get("dataset_path", "Unknown")
 
             citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
             if citation_block is None:
@@ -198,10 +232,6 @@ class Spreadsheet:
                 )
                 continue
             subject_list: list = citation_block.get_value("subject") or []
-
-            logger.debug(
-                f"{loaded_dataset.data.datasetVersion.datasetPersistentId}: {loaded_dataset.data.datasetVersion.lastUpdateTime}"
-            )
 
             row: DatasetExportRow = {
                 "DatasetTitle": citation_block.get_value("title") or "",
@@ -213,18 +243,18 @@ class Spreadsheet:
                     if loaded_dataset.data.datasetVersion.datasetPersistentId
                     else ""
                 ),
-                "DS_Path": path_info,
+                "DS_Path": self.get_dataset_path(dataset_meta, citation_block.get_value("title")),
                 "ID": loaded_dataset.data.id,
                 "DatasetPersistentId": loaded_dataset.data.datasetVersion.datasetPersistentId,
                 "DatasetId": loaded_dataset.data.datasetVersion.datasetId,
                 "VersionState": loaded_dataset.data.datasetVersion.versionState,
                 "LastUpdateTime": loaded_dataset.data.datasetVersion.lastUpdateTime,
-                # "ReleaseTime": loaded_dataset.data.datasetVersion.releaseTime,
+                "ReleaseTime": loaded_dataset.data.datasetVersion.releaseTime,
                 "CreateTime": loaded_dataset.data.datasetVersion.createTime,
                 "Version": str(self._get_dataset_version(dataset_meta)),
                 "FileCount": get_data_files_count(dataset_meta),
-                "FileSize": file_size,
-                "FileSize_normalized": convert_size(file_size),
+                "FileSize": get_data_files_size(dataset_meta),
+                "FileSize_normalized": convert_size(get_data_files_size(dataset_meta)),
                 "License": license_info.get("name")
                 if (license_info := getattr(loaded_dataset.data.datasetVersion, "license", None))
                 else "",

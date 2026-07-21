@@ -17,10 +17,10 @@ class DatasetExportRow(TypedDict, total=False):
     Version: str
     VersionState: str
     LastUpdateTime: str
-    ReleaseTime: str
+    ReleaseTime: str | None
     CreateTime: str
 
-    FileCount: int
+    FileCount: int | str
     FileSize: int
     FileSize_normalized: float
 
