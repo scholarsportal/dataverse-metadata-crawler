@@ -191,7 +191,18 @@ class DatasetSubjects(StrEnum):
 
     @classmethod
     def from_value(cls, value: str) -> str | None:
-        """Return the enum member name for a subject value."""
+        """Return the enum member name for a subject value with protection against invalid values.
+
+        Parameters
+        ----------
+        value : str
+            The subject value to look up.
+
+        Returns
+        -------
+        str | None
+            The enum member name if the value is valid, otherwise None.
+        """
         try:
             return cls(value).name
         except ValueError:
