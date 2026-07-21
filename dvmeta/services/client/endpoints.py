@@ -26,7 +26,9 @@ class Endpoints:
         return "api/search"
 
     @staticmethod
-    def ds_json(dataset_id: str, version: DatasetVersionTag = "latest") -> str:
+    def ds_json(
+        dataset_id: str, version: DatasetVersionTag = "latest", return_owners: bool = True
+    ) -> str:
         """Dataset JSON representation endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
@@ -36,6 +38,8 @@ class Endpoints:
         dataset_id : str
         version : DatasetVersionTag, optional
             By default, "latest".
+        return_owners : bool, optional
+            By default, True. Whether to return the owners of the dataset (hierarchical information).
 
         Returns
         -------
@@ -49,6 +53,9 @@ class Endpoints:
 
         if version != "latest":
             url += f"/versions/:{version}"
+
+        if return_owners:
+            url += "?returnOwners=true"
 
         return url
 
