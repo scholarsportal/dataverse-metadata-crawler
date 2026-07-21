@@ -227,18 +227,19 @@ def export_spreadsheet(ctx: typer.Context) -> None:
     state = get_state(ctx)
 
     with spinner():
-        if state.crawl_result is None or state.crawl_result.meta_dict is None:
+        if state.crawl_result is None or not state.crawl_result.meta_dict:
             crawl_metadata(ctx)
 
-        if state.permission and state.crawl_result.permission_dict is None:
+        if state.permission:
             crawl_permission(ctx)
 
         assert state.crawl_result is not None
         assert state.crawl_result.meta_dict is not None
         assert state.config is not None
+        assert state.crawl_result.permission_dict is not None
 
         spreadsheet = Spreadsheet(state.config)
-        spreadsheet.make_csv_file(state.crawl_result.meta_dict)
+        spreadsheet.make_csv_file(state.crawl_result.meta_dict, state.crawl_result.permission_dict)
 
 
 @app.command()
