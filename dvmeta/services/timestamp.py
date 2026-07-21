@@ -1,4 +1,4 @@
-"""This module contains a class to manage timestamps."""
+"""Timestamp service for the crawling process."""
 
 # ruff: noqa: DTZ005
 from dataclasses import dataclass
