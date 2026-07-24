@@ -9,7 +9,7 @@ from dvmeta.models.ds_version_tags import DatasetVersionTags
 from dvmeta.services.client.http import HttpxClient
 
 
-def validate_version_type(value: str) -> str | float:
+def validate_version_type(value: str | float | None) -> str | int | float | None:
     """Validate the value of --version argument.
 
     Args:
@@ -19,16 +19,16 @@ def validate_version_type(value: str) -> str | float:
         The validated version value.
 
     Raises:
-        BadParameter: If the value is not valid.
+        BadParameter: If the value is invalid.
     """
-    value = value.lower().strip()
+    value = value.lower().strip() if isinstance(value, str) else value
 
     try:
         model = DatasetVersionTags.model_validate({"version": value})
-        return model.version
     except ValidationError:
         msg = f'Invalid version: {value}. Must be "draft", "latest", "latest-published", or a number like "1" or "1.2".'
-        raise BadParameter(msg)
+        raise BadParameter(msg) from None
+    return model.version
 
 
 def validate_connection(config: Config) -> bool:
