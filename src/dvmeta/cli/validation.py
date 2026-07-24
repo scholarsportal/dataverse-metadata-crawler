@@ -1,5 +1,7 @@
 """Functions for validating command line arguments and environment variables."""
 
+from http import HTTPStatus
+
 from loguru import logger
 from pydantic import ValidationError
 from typer import BadParameter
@@ -47,21 +49,21 @@ def validate_connection(config: Config) -> bool:
     client = HttpxClient(config)
 
     if config.api_token:
-        result = client.authenticate_api_token()
-        if result is True:
-            msg = f"Connection to the dataverse repository {config.base_url} with API Token is successful."
-            logger.info(msg)
+        response = client.check_dv_collection(auth=True)
+        if response.is_success:
+            logger.info(
+                f"Connection to the dataverse repository {config.base_url} with API Token is successful."
+            )
             return True
-        if result is False:
-            msg = "Failed to authenticate the API Token with the repository. Will try to crawl without the API Token."
-            logger.warning(msg)
+        if response.status_code != HTTPStatus.UNAUTHORIZED:
+            msg = f"Failed to connect to the Dataverse repository at {config.base_url} (status {response.status_code}). Please check the URL or your API token and try again."
+            raise BadParameter(msg)
+        logger.warning(
+            "The API Token was rejected (401 Unauthorized). Will try to crawl without the API Token."
+        )
 
-    # Always check basic connection whether API auth failed or wasn't provided
-    client = HttpxClient(config)
-    result = client.authenticate_dv_connection()
-    if result is False:
-        msg = f"Failed to connect to the dataverse repository: {config.base_url}. Exiting..."
-        logger.error(msg)
+    if not client.check_dv_collection(auth=False).is_success:
+        msg = f"Failed to connect to the Dataverse repository at {config.base_url}. Please check the URL or your API token and try again."
         raise BadParameter(msg)
 
     logger.info(f"Connection to the dataverse repository {config.base_url} is successful.")

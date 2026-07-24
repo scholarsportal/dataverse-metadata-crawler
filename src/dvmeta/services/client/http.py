@@ -44,27 +44,23 @@ class HttpxClient:
                     status_code=500, text="Error occurred during request", request=request
                 )
 
-    def authenticate_api_token(self) -> bool:
-        """Authenticate the API token for the Dataverse repository.
+    def check_dv_collection(self, *, auth: bool) -> httpx2.Response:
+        """Check the connection to the Dataverse repository.
+
+        Args:
+            auth: Whether to authenticate with the API token or not.
 
         Returns:
-            bool: True if the token is valid.
+            httpx2.Response: The response from the Dataverse repository.
         """
+        endpoint = Endpoints.user_info() if auth else Endpoints.version_info()
         try:
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
-                response = client.get(Endpoints.user_info(), headers=self.header)
-                return response.is_success
+                return client.get(endpoint, headers=self.header if auth else None)
         except (httpx2.HTTPStatusError, httpx2.RequestError):
-            return False
-
-    def authenticate_dv_connection(self) -> bool:
-        """Authenticate the connection to the Dataverse repository."""
-        try:
-            with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
-                response = client.get(Endpoints.version_info())
-                return response.is_success
-        except (httpx2.HTTPStatusError, httpx2.RequestError):
-            return False
+            return httpx2.Response(
+                status_code=500, text="Error occurred during request", request=httpx2.Request("GET", endpoint)
+            )
 
     def sync_get(self, url: str, params: list | dict | None = None) -> httpx2.Response | None:
         """Synchronous GET request.
