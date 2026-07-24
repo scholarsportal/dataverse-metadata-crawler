@@ -59,7 +59,9 @@ class HttpxClient:
                 return client.get(endpoint, headers=self.header if auth else None)
         except (httpx2.HTTPStatusError, httpx2.RequestError):
             return httpx2.Response(
-                status_code=500, text="Error occurred during request", request=httpx2.Request("GET", endpoint)
+                status_code=500,
+                text="Error occurred during request",
+                request=httpx2.Request("GET", endpoint),
             )
 
     def sync_get(self, url: str, params: list | dict | None = None) -> httpx2.Response | None:
