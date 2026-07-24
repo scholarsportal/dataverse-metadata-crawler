@@ -28,15 +28,13 @@ class HttpxClient:
     ) -> httpx2.Response:
         """Asynchronous HTTP client with semaphore.
 
-        Parameters
-        ----------
-            request (httpx2.Request): Pre-built request object
-            semaphore (asyncio.Semaphore): Semaphore bound to the current event loop
-            client (httpx2.AsyncClient): Async client bound to the current event loop
+        Args:
+            request: Pre-built request object.
+            semaphore: Semaphore bound to the current event loop.
+            client: Async client bound to the current event loop.
 
-        Returns
-        -------
-            httpx2.Response: Response object
+        Returns:
+            httpx2.Response: Response object.
         """
         async with semaphore:
             try:
@@ -49,14 +47,8 @@ class HttpxClient:
     def authenticate_api_token(self) -> bool:
         """Authenticate the API token for the Dataverse repository.
 
-        Returns
-        -------
-        bool
-
-        Raises
-        ------
-            httpx2.HTTPStatusError: If the request fails with a non-200 status code
-            httpx2.RequestError: If there is a network-related error during the request
+        Returns:
+            bool: True if the token is valid.
         """
         try:
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
@@ -66,12 +58,7 @@ class HttpxClient:
             return False
 
     def authenticate_dv_connection(self) -> bool:
-        """Authenticate the connection to the Dataverse repository.
-
-        Returns
-        -------
-        bool
-        """
+        """Authenticate the connection to the Dataverse repository."""
         try:
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
                 response = client.get(Endpoints.version_info())
@@ -82,16 +69,13 @@ class HttpxClient:
     def sync_get(self, url: str, params: list | dict | None = None) -> httpx2.Response | None:
         """Synchronous GET request.
 
-        Parameters
-        ----------
-        params : list | dict | None, optional
-            By default, None.
-        url : str
+        Args:
+            url: The URL to request.
+            params: Query parameters, by default None.
 
-        Returns
-        -------
-        httpx2.Response | None
-        """  # noqa: D401
+        Returns:
+            The response, or None if the request was unsuccessful.
+        """
         try:
             # Create a new client for each request to avoid the "closed client" issue
             with httpx2.Client(timeout=None, headers=self.header, base_url=self.base_url) as client:
@@ -107,13 +91,11 @@ class HttpxClient:
     async def async_get(self, url_list: list) -> list:
         """Asynchronous GET request.
 
-        Parameters
-        ----------
-            url_list (list): List of URLs (str) or pre-built httpx2.Request objects to GET
+        Args:
+            url_list: List of URLs (str) or pre-built httpx2.Request objects to GET.
 
-        Returns
-        -------
-            list: List of httpx2.Response objects
+        Returns:
+            list: List of httpx2.Response objects.
         """
         semaphore = asyncio.Semaphore(self.semaphore_num)
         async with httpx2.AsyncClient(

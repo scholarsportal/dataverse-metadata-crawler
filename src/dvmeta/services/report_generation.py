@@ -45,21 +45,13 @@ Item checksum (SHA-256): {{ item.checksum }}
 """
 
 
-def write_to_report(
-    config: Config,
-    timestamps: Timestamps,
-    crawl_result: CrawlResult,
-) -> None:
+def write_to_report(config: Config, timestamps: Timestamps, crawl_result: CrawlResult) -> None:
     """Write the crawl report to a file.
 
-    Parameters
-    ----------
-    config : Config
-        Configuration dictionary.
-    timestamps : Timestamps
-        Timestamps object containing start and end times.
-    crawl_result : CrawlResult
-        Result object containing all crawled data.
+    Args:
+        config: The crawl configuration.
+        timestamps: The start/end times of the crawl.
+        crawl_result: The crawl results to summarize in the report.
     """
     report = Template(read_template())
     rendered = report.render(
@@ -88,14 +80,18 @@ def read_template(template_path: str | Path = "res/report_template.txt") -> str:
 
     TODO: allow this to be set in a config file or command line argument.
 
-    Returns
-    -------
-    str
+    Args:
+        template_path: Path to the template file, by default "res/report_template.txt".
+
+    Returns:
+        str: The content of the crawl report template file.
     """
     report_template_path = Path(template_path)
 
     if not report_template_path.is_file():
-        logger.warning(f"Crawl report template file not found at {report_template_path}. Using default template.")
+        logger.warning(
+            f"Crawl report template file not found at {report_template_path}. Using default template."
+        )
         return DEFAULT_REPORT_TEMPLATE
 
     return report_template_path.read_text(encoding="utf-8")

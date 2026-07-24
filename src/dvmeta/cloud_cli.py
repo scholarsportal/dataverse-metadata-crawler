@@ -20,11 +20,14 @@ def create_env_widgets() -> tuple:
 
 
 def save_env_file(base_url: str, api_key: str) -> None:
-    """Saves the provided BASE_URL and API_TOKEN to a .env file."""
+    """Write the given BASE_URL and API_TOKEN to a .env file in the current directory.
+
+    Empty values are omitted.
+    """
     with Path(".env").open("w", encoding="utf-8") as file:
-        if base_url.strip():  # Only write BASE_URL if it's not empty
+        if base_url.strip():
             file.write(f'BASE_URL = "{base_url}"\n')
-        if api_key.strip():  # Only write API_TOKEN if it's not empty
+        if api_key.strip():
             file.write(f'API_TOKEN = "{api_key}"\n')
             print("✅ Successfully created the .env file with API_TOKEN defined!")
         else:
@@ -37,7 +40,6 @@ def display_env_input() -> None:
     display(base_url_widget, api_key_widget)
 
     def on_save(_) -> None:
-        """On save."""
         save_env_file(base_url_widget.value, api_key_widget.value)
 
     save_button = widgets.Button(description="Save .env")

@@ -11,16 +11,12 @@ def parse_search_response(
 ) -> list:
     """Parse the search response to extract dataset metadata.
 
-    Parameters
-    ----------
-    publication_status : Literal["Draft", "Published", "Unpublished"] | None, optional
-        The publication status to filter the items by, by default None
-    items : list[dict]
-        The items field returned by the Search API response.
+    Args:
+        items: The items field returned by the Search API response.
+        publication_status: The publication status to filter the items by, by default None.
 
-    Returns
-    -------
-    list
+    Returns:
+        list: Deduplicated dataset entity IDs.
     """
     if publication_status:
         items = [
@@ -39,22 +35,18 @@ def parse_search_response(
 def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) -> dict:
     """Merge permission metadata into the meta_dict.
 
-    Parameters
-    ----------
-    permission_metadata : dict
-        The permission metadata dictionary to merge, which contains dataset permissions.
-    meta_dict : dict
-        The original metadata dictionary containing dataset metadata.
+    Args:
+        meta_dict: The original metadata dictionary containing dataset metadata.
+        permission_metadata: The permission metadata dictionary to merge in, keyed by dataset ID.
 
-    Returns
-    -------
-    dict: The merged metadata dictionary with permission metadata included.
+    Returns:
+        dict: The merged metadata dictionary with permission metadata included.
     """
     permission_metadata = {
         str(k): v for k, v in permission_metadata.items()
     }  # Convert keys to str for JSON serialization
 
-    meta_dict_copy = meta_dict.copy()  # Create a copy to avoid modifying the original dictionary
+    meta_dict_copy = meta_dict.copy()  # Avoid mutating the caller's dict
 
     for dataset_id in meta_dict:
         permissions = permission_metadata.get(str(dataset_id))
@@ -63,7 +55,7 @@ def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) ->
         else:
             logger.debug(f"No permission metadata found for dataset ID {dataset_id}.")
 
-    # Add dataset_meta['permissions'] = None to standardize the output for datasets without permissions
+    # Standardize output: ensure every dataset has a permissions key
     for dataset_meta in meta_dict_copy.values():
         dataset_meta.setdefault("permissions", None)
 
@@ -73,14 +65,11 @@ def merge_permission_to_meta_dict(meta_dict: dict, permission_metadata: dict) ->
 def get_total_count_from_response(response: dict) -> int:
     """Extract the total count of items from the search response.
 
-    Parameters
-    ----------
-    response : dict
-        The search response dictionary.
+    Args:
+        response: The search response dictionary.
 
-    Returns
-    -------
-    int: The total count of items in the search response.
+    Returns:
+        int: The total count of items in the search response.
     """
     return response.get("data", {}).get("total_count", 0)
 
@@ -88,22 +77,15 @@ def get_total_count_from_response(response: dict) -> int:
 def get_start_parameters(total_count: int, per_page: int) -> tuple[int, ...]:
     """Calculate the start parameters for pagination.
 
-    Parameters
-    ----------
-    per_page : int
-        The number of items to display per page.
-    total_count : int
-        The total number of items to paginate.
+    Args:
+        total_count: The total number of items to paginate.
+        per_page: The number of items to display per page.
 
-    Returns
-    -------
-    tuple[int, ...]
-        A tuple of start parameters for pagination.
+    Returns:
+        tuple[int, ...]: A tuple of start parameters for pagination.
 
-    Raises
-    ------
-    ValueError
-        If per_page is not a positive integer.
+    Raises:
+        ValueError: If per_page is not a positive integer.
     """
     if per_page <= 0:
         msg = "per_page must be a positive integer."

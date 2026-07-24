@@ -30,13 +30,15 @@ from dvmeta.services.timestamp import Timestamps, get_current_time
 
 # ruff:file-ignore[boolean-type-hint-positional-argument]
 
-setup_logging()  # Initialize logging at the module level to ensure it's set up before any commands are run
+setup_logging()  # must run before any command executes
 
 app = typer.Typer()
 
 
 @dataclass
 class CLIState:
+    """Mutable CLI state shared between commands via `ctx.obj`."""
+
     config: Config | None = None
     timestamps: Timestamps | None = None
     crawler: MetaDataCrawler | None = None
@@ -73,13 +75,11 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
 ) -> None:
     """Step 1: load config and validate inputs.
 
-    Runs before every subcommand.
+    Runs before every subcommand. See `TyperOptions` for option descriptions.
     """
     config = Config()
     log_level = log_level or config.log_level  # CLI flag wins over LOG_LEVEL in .env
-    setup_logging(
-        get_dir(ExportDir.LOG) if debug_log else None, log_level=log_level
-    )  # Reconfigure logging if debug_log is set, otherwise use default configuration
+    setup_logging(get_dir(ExportDir.LOG) if debug_log else None, log_level=log_level)
 
     state = CLIState()
     state.timestamps = Timestamps(start_time=get_current_time())
@@ -105,7 +105,14 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
 
 
 def get_state(ctx: typer.Context) -> CLIState:
-    """Retrieve the CLI state from the Typer context."""
+    """Retrieve the CLI state from the Typer context.
+
+    Returns:
+        The current `CLIState`.
+
+    Raises:
+        BadParameter: If the CLI state was not initialized.
+    """
     state = ctx.obj
     if state is None:
         msg = "CLI state not initialized"
@@ -139,7 +146,6 @@ def search(ctx: typer.Context) -> None:
     with spinner():
         state.crawler = MetaDataCrawler(state.config)
 
-        # First get the total count of the search result
         total_count_rsp = state.crawler.get_search_result(base_search_params=base_search_params)
 
         total_count = get_total_count_from_response(total_count_rsp)
@@ -239,15 +245,15 @@ def export_spreadsheet(ctx: typer.Context) -> None:
         assert state.crawl_result.permission_dict is not None
 
         spreadsheet = Spreadsheet(state.config)
-        spreadsheet.make_csv_file(state.crawl_result.meta_dict, state.crawl_result.permission_dict)
+        spreadsheet.make_csv_file(state.crawl_result.meta_dict)
 
 
 @app.command()
 def run_all(ctx: typer.Context) -> None:
-    """Run the full crawl process: search -> crawl metadata -> crawl permissions -> export spreadsheet.
+    """Run the full crawl process: search, crawl metadata, crawl permissions, export spreadsheet.
 
     Export the metadata (with permissions if available) to JSON and spreadsheet.
-    """  # ruff:ignore[doc-line-too-long]
+    """
     state = get_state(ctx)
     state.skip_export = True
     report = state.report

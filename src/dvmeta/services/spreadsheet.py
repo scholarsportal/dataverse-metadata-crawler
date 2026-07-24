@@ -5,18 +5,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urljoin
 
-from dv_schema_models.dataset_instance import load_dataset
+from dv_schema_models.dataset_instance import safe_load_dataset
 from dv_schema_models.file_instance import FileInstance
-from dv_schema_models.role_assignments import RoleAssignments, load_role_assignments
 from loguru import logger
 
 from dvmeta.models.config import Config
-from dvmeta.models.csv_model import (
-    DatasetExportRow,
-    DatasetSubjects,
-    MetadataBlocks,
-    RoleAssignmentsTypes,
-)
+from dvmeta.models.csv_model import DatasetExportRow, DatasetSubjects, MetadataBlocks
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
@@ -33,7 +27,14 @@ class Spreadsheet:
 
     @staticmethod
     def serialize_row(row: DatasetExportRow) -> dict:
-        """Serialize export row, joining lists into '; '-separated strings."""
+        """Serialize export row, joining lists into '; '-separated strings.
+
+        Args:
+            row: The export row to serialize.
+
+        Returns:
+            dict: A dictionary representing the serialized row.
+        """
         result = {}
         for key, value in row.items():
             if isinstance(value, list):
@@ -44,7 +45,14 @@ class Spreadsheet:
 
     @staticmethod
     def _get_dataset_version(dataset_meta: dict) -> float | str:
-        """Get dataset version."""
+        """Get dataset version.
+
+        Args:
+            dataset_meta: The dataset metadata.
+
+        Returns:
+            float | str: The dataset version as a float or "DRAFT" if the version state is draft.
+        """
         dataset_version = dataset_meta.get("datasetVersion", {})
         if dataset_version.get("versionState") == "DRAFT":
             return "DRAFT"
@@ -58,14 +66,11 @@ class Spreadsheet:
     def _get_dataset_subjects(subject_list: list[str] | None) -> dict[str, bool]:
         """Get dataset subjects, with the mapped boolean values for each subject.
 
-        Parameters
-        ----------
-        subject_list : list[str] | None
+        Args:
+            subject_list: Subjects associated with the dataset, or None if none are provided.
 
-        Returns
-        -------
-        dict[str, bool]: {CM_Subject_<subject>: bool} for each subject in DatasetSubjects.
-
+        Returns:
+            dict[str, bool]: Mapping of each known subject to whether it is in `subject_list`.
         """
         subjects = dict.fromkeys(DatasetSubjects.__members__, False)
 
@@ -79,27 +84,47 @@ class Spreadsheet:
         return subjects
 
     @staticmethod
-    def _parse_permission_values(role_assignments: RoleAssignments) -> dict:
-        """Parse permission values."""
-        dictionary = {}
+    def _parse_permission_values(dataset_meta: dict) -> dict:
+        """Parse permission values.
 
-        for role in RoleAssignmentsTypes:
-            count = role_assignments.count_field("roleAlias", role.value)
-            dictionary[f"{role.name}"] = count
+        Args:
+            dataset_meta: The dataset metadata.
 
-        return dictionary
+        Returns:
+            dict: Role-assignment counts, or "NA" placeholders if permissions weren't fetched.
+        """
+        permission_info = dataset_meta.get("permissions", {})
+        if permission_info.get("status") != "OK":
+            return {
+                "DS_Permission": False,
+                "DS_Collab": "NA",
+                "DS_Admin": "NA",
+                "DS_Contrib": "NA",
+                "DS_ContribPlus": "NA",
+                "DS_Curator": "NA",
+                "DS_FileDown": "NA",
+                "DS_Member": "NA",
+            }
+        data = permission_info.get("data") or []
+        return {
+            "DS_Permission": True,
+            "DS_Collab": len(data),
+            "DS_Admin": len([p for p in data if p.get("_roleAlias") == "admin"]),
+            "DS_Contrib": len([p for p in data if p.get("_roleAlias") == "contributor"]),
+            "DS_ContribPlus": len([p for p in data if p.get("_roleAlias") == "fullContributor"]),
+            "DS_Curator": len([p for p in data if p.get("_roleAlias") == "curator"]),
+            "DS_FileDown": len([p for p in data if p.get("_roleAlias") == "fileDownloader"]),
+            "DS_Member": len([p for p in data if p.get("_roleAlias") == "member"]),
+        }
 
     def _get_column_order(self, row_keys: list[str]) -> list[str]:
         """Get column order.
 
-        Parameters
-        ----------
-        row_keys : list[str]
+        Args:
+            row_keys: The keys present in a serialized row.
 
-        Returns
-        -------
-        list[str]
-
+        Returns:
+            list[str]: `row_keys` ordered per `spreadsheet_order.csv`, unlisted keys appended last.
         """
         if Path(self.spreadsheet_order_file_path).exists():
             order_list = (
@@ -119,13 +144,12 @@ class Spreadsheet:
     def get_dataset_path(ds_metadata: dict, dataset_title: str = "") -> str | None:
         """Get the dataset path from a nested isPartOf chain.
 
-        Parameters
-        ----------
-            ds_metadata (dict): Dataset metadata containing the nested isPartOf chain.
+        Args:
+            ds_metadata: The dataset metadata.
+            dataset_title: The title of the dataset, by default "".
 
-        Returns
-        -------
-            str | None: The dataset path, or None if it cannot be built.
+        Returns:
+            The "/"-joined collection path, or None if `ds_metadata` has no isPartOf chain.
         """
         current = ds_metadata.get("data", {}).get("isPartOf")
         if not isinstance(current, Mapping):
@@ -150,44 +174,33 @@ class Spreadsheet:
         names.insert(0, dataset_title)
         return "/".join(reversed(names))
 
-    def make_csv_file(self, meta_dict: dict, role_assignments_dict: dict) -> tuple[Path, str]:
+    def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
-        Parameters
-        ----------
-        meta_dict : dict
-        role_assignments_dict : dict
+        Args:
+            meta_dict: Dataset metadata keyed by dataset ID.
 
-        Returns
-        -------
-        tuple[Path, str]
+        Returns:
+            A tuple of (CSV file path, SHA-256 checksum).
         """
         csv_file_path = Path(self.csv_file_dir).joinpath(f"ds_metadata_{get_file_timestamp()}.csv")
 
         rows = []
 
-        for dataset_meta in meta_dict.values():
-            try:
-                loaded_dataset = load_dataset(dataset_meta)
-            except Exception as e:
-                logger.error(f"Failed to load dataset: {e}")
+        for key, dataset_meta in meta_dict.items():
+            loaded_dataset = safe_load_dataset(dataset_meta)
+            if isinstance(loaded_dataset, str):
+                logger.warning(f"Error loading dataset {key}: {loaded_dataset}")
                 continue
-
-            try:
-                role_assignments = load_role_assignments(
-                    role_assignments_dict[loaded_dataset.data.id]
-                )
-            except Exception:
+            if not loaded_dataset.data.latestVersion:
                 logger.warning(
-                    f"No role assignments found for dataset ID {loaded_dataset.data.id}. "
-                    "Using empty role assignments."
+                    f"Dataset {loaded_dataset.data.id} has no content metadata (likely deaccessioned), skipping to write to CSV"
                 )
-                role_assignments = RoleAssignments(status="empty", data=[])
-
+                continue
             citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
             if citation_block is None:
                 logger.warning(
-                    f"Dataset {loaded_dataset.data.datasetVersion.datasetPersistentId} has no citation block, skipping"
+                    f"Dataset {loaded_dataset.data.id} has no citation block, skipping to write to CSV"
                 )
                 continue
             subject_list: list = citation_block.get_value("subject") or []
@@ -368,7 +381,7 @@ class Spreadsheet:
                     "software", "softwareVersion"
                 ),
                 # Permission role counts
-                **self._parse_permission_values(role_assignments),
+                **self._parse_permission_values(dataset_meta),
             }
 
             rows.append(self.serialize_row(row))

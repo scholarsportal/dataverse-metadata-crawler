@@ -10,29 +10,32 @@ from dvmeta.services.timestamp import get_file_timestamp
 from dvmeta.services.utils import gen_checksum
 
 
-def export_json(data: dict, export_type: str, timestamp_enabled: bool = True) -> tuple[Path | None, str | None]:
+def export_json(
+    data: dict, export_type: str, timestamp_enabled: bool = True
+) -> tuple[Path | None, str | None]:
     """Export data to a timestamped JSON file and log the result.
 
-    Parameters
-    ----------
-    data : dict
-        The data to export.
-    export_type : str
-        Type identifier, used as the filename prefix.
-    timestamp_enabled : bool, optional
-        Whether to include a timestamp in the filename. By default, True.
+    Args:
+        data: The data to export.
+        export_type: Type identifier, used as the filename prefix.
+        timestamp_enabled: Whether to include a timestamp in the filename, by default True.
 
-    Returns
-    -------
-    Tuple of : json_path, checksum
+    Returns:
+        A tuple of (file path, SHA-256 checksum), or (None, None) if data was empty.
     """
-    file_name = f"{export_type}_{get_file_timestamp()}.json" if timestamp_enabled else f"{export_type}.json"
+    file_name = (
+        f"{export_type}_{get_file_timestamp()}.json" if timestamp_enabled else f"{export_type}.json"
+    )
     json_file_path = get_dir(ExportDir.JSON) / file_name
 
     if isinstance(data, dict) and data:
-        json_file_path.write_bytes(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS))
+        json_file_path.write_bytes(
+            orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS)
+        )
         checksum = gen_checksum(json_file_path)
-        logger.info(f"Exported {json_file_path.name} to json file: {json_file_path}\nChecksum (SHA-256): {checksum}")
+        logger.info(
+            f"Exported {json_file_path.name} to json file: {json_file_path}\nChecksum (SHA-256): {checksum}"
+        )
         return json_file_path, checksum
 
     logger.warning(f"{json_file_path.name} is empty, no json file is created.")

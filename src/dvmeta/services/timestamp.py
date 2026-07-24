@@ -16,14 +16,11 @@ class Timestamps:
 def get_display_time(time_obj: datetime | None = None) -> str:
     """Return a string representation of the time in the format: YYYY-MM-DD HH:MM:SS.
 
-    Parameters
-    ----------
-    time_obj : datetime | None, optional
-        By default, None.
+    Args:
+        time_obj: The time to format, by default the current time.
 
-    Returns
-    -------
-    str
+    Returns:
+        str: The formatted time string.
     """
     if time_obj is None:
         time_obj = datetime.now()
@@ -31,31 +28,24 @@ def get_display_time(time_obj: datetime | None = None) -> str:
 
 
 def get_file_timestamp() -> str:
-    """Return a string representation of the current time in the format: YYYYMMDD-HHMMSS.
-
-    Returns
-    -------
-    str
-    """
+    """Return the current time formatted for use in filenames (YYYYMMDD-HHMMSS)."""
     return datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
 def get_current_time() -> datetime:
-    """Return the current time as a datetime object.
-
-    Returns
-    -------
-    datetime
-    """
+    """Return the current time."""
     return datetime.now()
 
 
 def get_elapsed_time(start_time: datetime, end_time: datetime | None = None) -> str:
     """Return the elapsed time since the start time.
 
-    Returns
-    -------
-    str
+    Args:
+        start_time: The start time.
+        end_time: The end time, by default the current time.
+
+    Returns:
+        str: The elapsed time.
     """
     end = end_time or datetime.now()
     elapsed_time = end - start_time

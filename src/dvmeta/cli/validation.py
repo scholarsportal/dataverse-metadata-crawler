@@ -1,4 +1,4 @@
-"""This module contains functions for validating command line arguments and environment variables."""
+"""Functions for validating command line arguments and environment variables."""
 
 from loguru import logger
 from pydantic import ValidationError
@@ -12,20 +12,14 @@ from dvmeta.services.client.http import HttpxClient
 def validate_version_type(value: str) -> str | float:
     """Validate the value of --version argument.
 
-    Parameters
-    ----------
-    value : str
-            Value of --version argument.
+    Args:
+        value: Value of --version argument.
 
-    Returns
-    -------
-    str | float
+    Returns:
         The validated version value.
 
-    Raises
-    ------
-    BadParameter
-        If the value is not valid.
+    Raises:
+        BadParameter: If the value is not valid.
     """
     value = value.lower().strip()
 
@@ -40,19 +34,14 @@ def validate_version_type(value: str) -> str | float:
 def validate_connection(config: Config) -> bool:
     """Validate connection to the Dataverse repository.
 
-    Parameters
-    ----------
-    config : Config
-        The configuration object containing the base URL and API token.
+    Args:
+        config: The configuration object containing the base URL and API token.
 
-    Returns
-    -------
-    bool: True if the API token is valid, False otherwise.
+    Returns:
+        True if the API token is valid, False otherwise.
 
-    Raises
-    ------
-    BadParameter
-        If connection to the repository fails.
+    Raises:
+        BadParameter: If the connection to the Dataverse repository fails.
     """
     logger.info("Checking the connection to the Dataverse repository...")
     client = HttpxClient(config)

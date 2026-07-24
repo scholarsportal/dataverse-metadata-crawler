@@ -18,13 +18,11 @@ class ExportDir(StrEnum):
 def get_dir(name: ExportDir) -> Path:
     """Return the path to the requested export directory, creating it if it doesn't exist.
 
-    Parameters
-    ----------
-    name : ExportDir
+    Args:
+        name: The export directory to look up.
 
-    Returns
-    -------
-    Path
+    Returns:
+        Path: The path to the requested export directory.
     """
     path = EXPORT_BASE_DIR / name
     path.mkdir(parents=True, exist_ok=True)

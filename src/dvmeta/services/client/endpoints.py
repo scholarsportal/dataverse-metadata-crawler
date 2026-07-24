@@ -18,10 +18,6 @@ class Endpoints:
         """Search endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/search.html
-
-        Returns
-        -------
-        str
         """
         return "api/search"
 
@@ -33,18 +29,11 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
 
-        Parameters
-        ----------
-        dataset_id : str
-        version : DatasetVersionTag, optional
-            By default, "latest". Allowed values are "draft", "latest", "latest-published", or a number like "1" or "1.2".
-        return_owners : bool, optional
-            By default, True. Whether to return the owners of the dataset (hierarchical information).
-
-        Returns
-        -------
-        str
-        """  # ruff:ignore[doc-line-too-long]
+        Args:
+            dataset_id: The dataset's persistent ID or database ID.
+            version: The dataset version to fetch.
+            return_owners: Whether to include the owning collection hierarchy.
+        """
         url = f"api/datasets/{dataset_id}"
 
         # Handle inputs if version is not in the allowed values
@@ -67,13 +56,8 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#list-role-assignments-in-a-dataset
 
-        Parameters
-        ----------
-        dataset_id : str | int
-
-        Returns
-        -------
-        str
+        Args:
+            dataset_id: The dataset's persistent ID or database ID.
         """
         return f"api/datasets/{dataset_id}/assignments"
 
@@ -83,13 +67,8 @@ class Endpoints:
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#view-a-dataverse-collection
 
-        Parameters
-        ----------
-        dataverse_id : str
-
-        Returns
-        -------
-        str
+        Args:
+            dataverse_id: The Dataverse collection's alias or database ID.
         """
         return f"api/dataverses/{dataverse_id}"
 
@@ -98,10 +77,6 @@ class Endpoints:
         """User info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-user-information-in-json-format
-
-        Returns
-        -------
-        str
         """
         return "api/users/:me"
 
@@ -110,9 +85,5 @@ class Endpoints:
         """Version info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#show-dataverse-software-version-and-build-number
-
-        Returns
-        -------
-        str
         """
         return "api/info/version"

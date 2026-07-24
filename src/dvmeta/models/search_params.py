@@ -11,17 +11,23 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SearchSort(StrEnum):
+    """Fields the search results can be sorted by."""
+
     NAME = "name"
     DATE = "date"
     SCORE = "score"
 
 
 class SortOrder(StrEnum):
+    """Sort direction for search results."""
+
     ASC = "asc"
     DESC = "desc"
 
 
 class ItemType(StrEnum):
+    """Dataverse entity types that can appear in search results."""
+
     DATASET = "dataset"
     DATAVERSE = "dataverse"
     FILE = "file"
@@ -30,10 +36,7 @@ class ItemType(StrEnum):
 class DataverseSearchParams(BaseModel):
     """Dataverse search API query parameters."""
 
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     q: str = "*"
     type: list[ItemType] | None = Field(default=None, alias="type")
@@ -77,12 +80,11 @@ class DataverseSearchParams(BaseModel):
 
         return self
 
-    def to_params(self) -> list[tuple[str, str | int | float | None]]:  # noqa: C901, PLR0912
+    def to_params(self) -> list[tuple[str, str | int | float | None]]:  # ruff:ignore[complex-structure, too-many-branches]
         """Convert the model into HTTP query parameters.
 
-        Returns
-        -------
-        list[tuple[str, str | int | float | None]]
+        Returns:
+            list[tuple[str, str | int | float | None]]: Query parameters for the Search API.
         """
         params: list[tuple[str, str | int | float | None]] = [("q", self.q)]
 
