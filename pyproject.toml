@@ -52,7 +52,7 @@ dev = [
   "zensical (>=0.0.51)",
   "mkdocstrings[python] (>=0.26.2)",
   "poethepoet (>=0.32.1)",
-  "prek",
+  "prek (>=0.4.0)",
   "pytest (>=8.3.4)",
   "pytest-mock (>=3.14.0)",
   "pytest-xdist (>=3.6.1)",
