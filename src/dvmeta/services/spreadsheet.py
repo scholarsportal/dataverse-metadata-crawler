@@ -190,7 +190,9 @@ class Spreadsheet:
         for key, dataset_meta in meta_dict.items():
             loaded_dataset = safe_load_dataset(dataset_meta)
             if isinstance(loaded_dataset, str):
-                logger.warning(f"Error loading dataset {key}: {loaded_dataset}")
+                logger.warning(
+                    f"Error loading dataset {key}: {loaded_dataset}, skipping to write to CSV"
+                )
                 continue
             if not loaded_dataset.data.latestVersion:
                 logger.warning(
