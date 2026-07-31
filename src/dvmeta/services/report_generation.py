@@ -45,13 +45,20 @@ Item checksum (SHA-256): {{ item.checksum }}
 """
 
 
-def write_to_report(config: Config, timestamps: Timestamps, crawl_result: CrawlResult) -> None:
+def write_to_report(
+    config: Config,
+    timestamps: Timestamps,
+    crawl_result: CrawlResult,
+    *,
+    timestamp_enabled: bool = True,
+) -> None:
     """Write the crawl report to a file.
 
     Args:
         config: The crawl configuration.
         timestamps: The start/end times of the crawl.
         crawl_result: The crawl results to summarize in the report.
+        timestamp_enabled: Whether to include a timestamp in the filename, by default True.
     """
     report = Template(read_template())
     rendered = report.render(
@@ -68,11 +75,13 @@ def write_to_report(config: Config, timestamps: Timestamps, crawl_result: CrawlR
         json_file_checksum_dict=crawl_result.export_data,
     )
 
-    log_file_path = get_dir(ExportDir.LOG) / f"report_{get_file_timestamp()}.txt"
+    file_name = f"report_{get_file_timestamp()}.txt" if timestamp_enabled else "report.txt"
 
-    Path(log_file_path).write_text(rendered, encoding="utf-8")
+    file_path = get_dir(ExportDir.LOG) / file_name
 
-    logger.info(f"The crawl report is saved at: {log_file_path}")
+    Path(file_path).write_text(rendered, encoding="utf-8")
+
+    logger.info(f"The crawl report is saved at: {file_path}")
 
 
 def read_template(template_path: str | Path = "res/report_template.txt") -> str:

@@ -11,7 +11,7 @@ from dvmeta.services.utils import gen_checksum
 
 
 def export_json(
-    data: dict, export_type: str, timestamp_enabled: bool = True
+    data: dict, export_type: str, *, timestamp_enabled: bool = True
 ) -> tuple[Path | None, str | None]:
     """Export data to a timestamped JSON file and log the result.
 

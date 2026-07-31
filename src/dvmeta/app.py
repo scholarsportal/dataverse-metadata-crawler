@@ -186,7 +186,11 @@ def crawl_metadata(ctx: typer.Context) -> None:
         )
 
         if not state.skip_export:
-            export_json(state.crawl_result.meta_dict, export_type="ds_metadata")
+            export_json(
+                state.crawl_result.meta_dict,
+                export_type="ds_metadata",
+                timestamp_enabled=state.timestamps_enabled,
+            )
 
         if state.report:
             state.timestamps.end_time = get_current_time()
@@ -220,7 +224,11 @@ def crawl_permission(ctx: typer.Context) -> None:
         )
 
         if not state.skip_export:
-            export_json(state.crawl_result.permission_dict, export_type="permission")
+            export_json(
+                state.crawl_result.permission_dict,
+                export_type="permission",
+                timestamp_enabled=state.timestamps_enabled,
+            )
 
         logger.info(
             f'Permission metadata for collection "{state.config.collection_alias}" completed. Crawled {len(state.crawl_result.permission_dict)} records.'
@@ -245,7 +253,9 @@ def export_spreadsheet(ctx: typer.Context) -> None:
         assert state.crawl_result.permission_dict is not None
 
         spreadsheet = Spreadsheet(state.config)
-        spreadsheet.make_csv_file(state.crawl_result.meta_dict)
+        spreadsheet.make_csv_file(
+            state.crawl_result.meta_dict, timestamp_enabled=state.timestamps_enabled
+        )
 
 
 @app.command()
@@ -270,14 +280,23 @@ def run_all(ctx: typer.Context) -> None:
             state.crawl_result.meta_dict, state.crawl_result.permission_dict
         )
 
-    export_json(state.crawl_result.meta_dict, export_type="ds_metadata")
+    export_json(
+        state.crawl_result.meta_dict,
+        export_type="ds_metadata",
+        timestamp_enabled=state.timestamps_enabled,
+    )
     export_spreadsheet(ctx)
 
     if report:
         assert state.config is not None
         assert state.timestamps is not None
         state.timestamps.end_time = get_current_time()
-        write_to_report(state.config, state.timestamps, state.crawl_result)
+        write_to_report(
+            state.config,
+            state.timestamps,
+            state.crawl_result,
+            timestamp_enabled=state.timestamps_enabled,
+        )
 
 
 if __name__ == "__main__":

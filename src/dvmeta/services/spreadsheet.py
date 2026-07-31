@@ -174,16 +174,20 @@ class Spreadsheet:
         names.insert(0, dataset_title)
         return "/".join(reversed(names))
 
-    def make_csv_file(self, meta_dict: dict) -> tuple[Path, str]:
+    def make_csv_file(self, meta_dict: dict, *, timestamp_enabled: bool = True) -> tuple[Path, str]:
         """Create a CSV file from the nested metadata list.
 
         Args:
             meta_dict: Dataset metadata keyed by dataset ID.
+            timestamp_enabled: Whether to include a timestamp in the filename, by default True.
 
         Returns:
             A tuple of (CSV file path, SHA-256 checksum).
         """
-        csv_file_path = Path(self.csv_file_dir).joinpath(f"ds_metadata_{get_file_timestamp()}.csv")
+        csv_file_name = (
+            f"ds_metadata_{get_file_timestamp()}.csv" if timestamp_enabled else "ds_metadata.csv"
+        )
+        csv_file_path = Path(self.csv_file_dir / csv_file_name)
 
         rows = []
 
