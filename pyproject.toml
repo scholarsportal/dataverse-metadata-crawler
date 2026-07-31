@@ -162,4 +162,4 @@ type = "simple"
 
   [tool.poe.tasks.test]
   help = "Test this package"
-  cmd = "pytest --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml"
+  cmd = "pytest --cov=src --cov-report=html --cov-report=xml"
