@@ -3,11 +3,12 @@
 import math
 from hashlib import sha256
 from pathlib import Path
+from typing import Any
 
 import jmespath
 
 
-def count_key(key: dict | list | tuple) -> int:
+def count_key(key: dict | list | tuple | Any) -> int:  # ruff:ignore[any-type]
     """Count the number of keys in a dictionary, list or tuple.
 
     Args:
