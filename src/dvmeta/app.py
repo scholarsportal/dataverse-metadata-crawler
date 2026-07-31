@@ -188,7 +188,8 @@ def crawl_metadata(ctx: typer.Context) -> None:
         if not state.skip_export:
             export_json(
                 state.crawl_result.meta_dict,
-                export_type="ds_metadata",
+                directory=ExportDir.JSON,
+                name="ds_metadata",
                 timestamp_enabled=state.timestamps_enabled,
             )
 
@@ -226,7 +227,8 @@ def crawl_permission(ctx: typer.Context) -> None:
         if not state.skip_export:
             export_json(
                 state.crawl_result.permission_dict,
-                export_type="permission",
+                directory=ExportDir.JSON,
+                name="permission",
                 timestamp_enabled=state.timestamps_enabled,
             )
 
@@ -282,7 +284,8 @@ def run_all(ctx: typer.Context) -> None:
 
     export_json(
         state.crawl_result.meta_dict,
-        export_type="ds_metadata",
+        directory=ExportDir.JSON,
+        name="ds_metadata",
         timestamp_enabled=state.timestamps_enabled,
     )
     export_spreadsheet(ctx)
