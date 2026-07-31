@@ -409,7 +409,7 @@ dev = [
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.26.2" },
     { name = "mkdocstrings-python", specifier = ">=2.0.5" },
     { name = "poethepoet", specifier = ">=0.32.1" },
-    { name = "prek" },
+    { name = "prek", specifier = ">=0.4.0" },
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
