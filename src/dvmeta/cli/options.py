@@ -4,6 +4,7 @@ import typer
 
 from dvmeta.cli.validation import validate_version_type
 from dvmeta.models.log_level import LogLevel
+from dvmeta.models.publication_status import PublicationStatus
 
 # ruff:file-ignore[boolean-positional-value-in-call]
 
@@ -62,7 +63,7 @@ class TyperOptions:
         "-m",
         help="The source of the metadata to crawl. This option can be used to exclude harvested datasets (that does not host directly on the installation).",
     )
-    publication_status: str = typer.Option(
+    publication_status: PublicationStatus | None = typer.Option(
         None,
         "--publication-status",
         "-ps",

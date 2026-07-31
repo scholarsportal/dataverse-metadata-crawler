@@ -4,10 +4,11 @@ from typing import Literal
 
 from loguru import logger
 
+from dvmeta.models.publication_status import PublicationStatus
+
 
 def parse_search_response(
-    items: list[dict],
-    publication_status: Literal["Draft", "Published", "Unpublished"] | None = None,
+    items: list[dict], publication_status: PublicationStatus | None = None
 ) -> list:
     """Parse the search response to extract dataset metadata.
 
