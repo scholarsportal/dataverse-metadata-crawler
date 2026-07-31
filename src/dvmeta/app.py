@@ -20,6 +20,7 @@ from dvmeta.crawler.utils import (
 from dvmeta.models.config import Config
 from dvmeta.models.crawl_result import CrawlResult
 from dvmeta.models.log_level import LogLevel
+from dvmeta.models.publication_status import PublicationStatus
 from dvmeta.models.search_params import DataverseSearchParams, ItemType
 from dvmeta.services.custom_logging import setup_logging
 from dvmeta.services.dir_manager import ExportDir, get_dir
@@ -68,7 +69,7 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     debug_log: bool = TyperOptions.debug_log,
     log_level: LogLevel | None = TyperOptions.log_level,
     metadata_source: str = TyperOptions.metadata_source,
-    publication_status: str = TyperOptions.publication_status,
+    publication_status: PublicationStatus | None = TyperOptions.publication_status,
     semaphore_limit: int = TyperOptions.semaphore_limit,
     timestamp_enabled: bool = TyperOptions.timestamp_enabled,
     permission: bool = TyperOptions.permission,
