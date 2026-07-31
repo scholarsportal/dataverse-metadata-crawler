@@ -29,12 +29,14 @@ def convert_size(size_bytes: int | str) -> str:
     Returns:
         str: The human-readable size (e.g. "1.5 MB"), or "Error" if `size_bytes` isn't an int.
     """
-    if not isinstance(size_bytes, int):
+    try:
+        size_bytes = int(size_bytes)
+    except (ValueError, TypeError):
         return "Error"
     if size_bytes == 0:
-        return "0B"
+        return "0 B"
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-    i = int(math.floor(math.log(size_bytes, 1024)))
+    i = math.floor(math.log(size_bytes, 1024))
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return f"{s} {size_name[i]}"
