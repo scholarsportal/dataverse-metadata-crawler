@@ -16,13 +16,13 @@ def export_json(
     """Export data to a timestamped JSON file and log the result.
 
     Args:
-        data: The data to export.
-        export_type: Type identifier, used as the filename prefix.
-        timestamp_enabled: Whether to include a timestamp in the filename, by default True.
+        data (dict): The data to export.
+        export_type (str): Type identifier, used as the filename prefix.
+        timestamp_enabled (bool): Whether to include a timestamp in the filename, by default True.
 
     Returns:
-        A tuple of (file path, SHA-256 checksum), or (None, None) if data was empty.
-    """
+        tuple[Path | None, str | None]: A tuple of (file path, SHA-256 checksum), or (None, None) if data was empty.
+    """  # ruff:ignore[doc-line-too-long]
     file_name = (
         f"{export_type}_{get_file_timestamp()}.json" if timestamp_enabled else f"{export_type}.json"
     )

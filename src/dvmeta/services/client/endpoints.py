@@ -18,6 +18,9 @@ class Endpoints:
         """Search endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/search.html
+
+        Returns:
+            str: The search endpoint URL.
         """
         return "api/search"
 
@@ -30,10 +33,13 @@ class Endpoints:
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-json-representation-of-a-dataset
 
         Args:
-            dataset_id: The dataset's persistent ID or database ID.
-            version: The dataset version to fetch.
-            return_owners: Whether to include the owning collection hierarchy.
-        """
+            dataset_id (str): The dataset's persistent ID or database ID.
+            version (Literal["draft", "latest", "latest-published"] | int | float | None): The dataset version to fetch.
+            return_owners (bool): Whether to include the owning collection hierarchy.
+
+        Returns:
+            str: The dataset JSON representation endpoint URL.
+        """  # ruff:ignore[doc-line-too-long]
         url = f"api/datasets/{dataset_id}"
 
         # Handle inputs if version is not in the allowed values
@@ -58,6 +64,9 @@ class Endpoints:
 
         Args:
             dataset_id: The dataset's persistent ID or database ID.
+
+        Returns:
+            str: The dataset permissions endpoint URL.
         """
         return f"api/datasets/{dataset_id}/assignments"
 
@@ -69,6 +78,9 @@ class Endpoints:
 
         Args:
             dataverse_id: The Dataverse collection's alias or database ID.
+
+        Returns:
+            str: The Dataverse JSON representation endpoint URL.
         """
         return f"api/dataverses/{dataverse_id}"
 
@@ -77,6 +89,9 @@ class Endpoints:
         """User info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#get-user-information-in-json-format
+
+        Returns:
+            str: The user info endpoint URL.
         """
         return "api/users/:me"
 
@@ -85,5 +100,8 @@ class Endpoints:
         """Version info endpoint.
 
         Docs: https://borealisdata.ca/guides/en/latest/api/native-api.html#show-dataverse-software-version-and-build-number
+
+        Returns:
+            str: The version info endpoint URL.
         """
         return "api/info/version"
