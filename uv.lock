@@ -366,7 +366,6 @@ dependencies = [
 dev = [
     { name = "codespell" },
     { name = "commitizen" },
-    { name = "coverage", extra = ["toml"] },
     { name = "ipykernel" },
     { name = "ipython" },
     { name = "ipywidgets" },
@@ -403,7 +402,6 @@ requires-dist = [
 dev = [
     { name = "codespell", specifier = ">=2.4.1" },
     { name = "commitizen", specifier = ">=4.3.0" },
-    { name = "coverage", extras = ["toml"], specifier = ">=7.6.10" },
     { name = "ipykernel", specifier = ">=6.29.4" },
     { name = "ipython", specifier = ">=8.18.0" },
     { name = "ipywidgets", specifier = ">=8.1.2" },

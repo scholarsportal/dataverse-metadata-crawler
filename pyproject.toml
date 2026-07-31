@@ -45,7 +45,6 @@ issues = "https://github.com/kenlhlui/dataverse-metadata-crawler/issues"
 dev = [
   "codespell (>=2.4.1)",
   "commitizen (>=4.3.0)",
-  "coverage[toml] (>=7.6.10)",
   "ipykernel (>=6.29.4)",
   "ipython (>=8.18.0)",
   "ipywidgets (>=8.1.2)",
@@ -163,12 +162,4 @@ type = "simple"
 
   [tool.poe.tasks.test]
   help = "Test this package"
-
-    [[tool.poe.tasks.test.sequence]]
-    cmd = "coverage run"
-
-    [[tool.poe.tasks.test.sequence]]
-    cmd = "coverage report"
-
-    [[tool.poe.tasks.test.sequence]]
-    cmd = "coverage xml"
+  cmd = "pytest --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml"
