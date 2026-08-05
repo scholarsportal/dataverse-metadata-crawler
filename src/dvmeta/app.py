@@ -74,10 +74,7 @@ def main(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     timestamp_enabled: bool = TyperOptions.timestamp_enabled,
     permission: bool = TyperOptions.permission,
 ) -> None:
-    """Step 1: load config and validate inputs.
-
-    Runs before every subcommand. See `TyperOptions` for option descriptions.
-    """
+    """Crawler that crawls metadata of datasets in a Dataverse collection and exports the metadata to JSON and spreadsheet."""  # ruff:ignore[doc-line-too-long]
     config = Config()
     log_level = log_level or config.log_level  # CLI flag wins over LOG_LEVEL in .env
     setup_logging(get_dir(ExportDir.LOG) if debug_log else None, log_level=log_level)
@@ -181,7 +178,7 @@ def crawl_metadata(ctx: typer.Context) -> None:
     with spinner():
         crawler = state.crawler
         dataset_ids = state.dataset_ids
-
+        logger.debug(f"state version: {state.config.version}")
         state.crawl_result.meta_dict = asyncio.run(
             crawler.get_dataset_metadata(dataset_ids, version=state.config.version)
         )

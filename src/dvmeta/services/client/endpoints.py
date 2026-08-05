@@ -43,11 +43,12 @@ class Endpoints:
         url = f"api/datasets/{dataset_id}"
 
         # Handle inputs if version is not in the allowed values
-        if version not in set(get_args(DatasetVersionKeyword)):
+        if version not in set(get_args(DatasetVersionKeyword)) and not isinstance(version, int | float):
             version = "latest"
 
-        if version != "latest" and version in DatasetVersionKeyword:
+        if version != "latest" and version in get_args(DatasetVersionKeyword):
             url += f"/versions/:{version}"
+
         elif isinstance(version, int | float):
             url += f"/versions/{version}"
 

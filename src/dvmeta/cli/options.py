@@ -42,6 +42,7 @@ class TyperOptions:
             '  "latest-published" - the latest published version'
             '  "x.y" - a specific version, where x is the major version number and y is the minor version number'
             '  "x" - same as "x.0"'
+            "  Note that the version apply only to individual datasets. The publication-status option can be used to filter datasets by their publication status. For example, if you want the get all published datasets but with the draft version, you can use --publication-status Published --version draft. But this option will also return datasets that is published, but does not have a draft version."
         ),
         prompt_required=False,
         callback=validate_version_type,
@@ -67,7 +68,7 @@ class TyperOptions:
         None,
         "--publication-status",
         "-ps",
-        help='The publication status of the datasets to crawl. Common values are "Published", "Draft", "Unpublished", "Deaccessioned". Depends on the installation.',
+        help='The publication status of the datasets to look for. Common values are "Published", "Draft", "Unpublished", "Deaccessioned". Depends on the installation.',
     )
     semaphore_limit: int = typer.Option(
         5,
