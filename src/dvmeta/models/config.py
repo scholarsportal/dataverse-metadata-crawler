@@ -9,7 +9,7 @@ from dvmeta.models.log_level import LogLevel
 class Config(BaseSettings):
     """Model for the configuration settings."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
 
     api_token: str | None = Field(
         None,
