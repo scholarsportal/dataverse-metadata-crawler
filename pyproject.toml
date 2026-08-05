@@ -163,3 +163,21 @@ type = "simple"
   [tool.poe.tasks.test]
   help = "Test this package"
   cmd = "pytest --cov=src --cov-report=html --cov-report=xml"
+
+  [tool.poe.tasks.generate_cli_docs]
+  help = "Generate usage documentation"
+  cmd = "python scripts/generate_cli_docs.py src/dvmeta/app.py -o docs/usage.md"
+
+  [tool.poe.tasks.bump]
+  cmd = "cz bump --yes"
+
+  [tool.poe.tasks.push]
+  cmd = "git push --follow-tags"
+
+  [tool.poe.tasks.release]
+  help = "Standardized release process"
+  sequence = [
+      { ref = "generate_cli_docs" },
+      { ref = "bump" },
+      { ref = "push" },
+  ]

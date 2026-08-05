@@ -1,7 +1,6 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
 [![Dataverse](https://img.shields.io/badge/Dataverse-FFA500?)](https://dataverse.org/)
-[![Code Style: Black](https://img.shields.io/badge/code_style-black-black?)](https://github.com/psf/black)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/scholarsportal/dataverse-metadata-crawler/main?urlpath=%2Fdoc%2Ftree%2Fcloud_cli.ipynb)
 
 # Dataverse Metadata Crawler
@@ -96,38 +95,10 @@ python3 -m dvmeta.cli.app [OPTIONS] COMMAND
 
 ```
 
-**Subcommands:**
-
-| **Command**          | **Description**                                                     |
-|----------------------|---------------------------------------------------------------------|
-| `search`             | Search for datasets in the collection.                              |
-| `crawl-metadata`     | Crawl and export dataset metadata to JSON.                          |
-| `crawl-permission`   | Crawl and export dataset permission metadata to JSON.               |
-| `export-spreadsheet` | Export crawled metadata to CSV only (No JSON).                                     |
-| `run-all`            | Run all steps in sequence (search → crawl metadata → crawl permission → export spreadsheet). |
-
-**Required options:**
-
-| **Option**           | **Short** | **Type** | **Description**                                                                                                                                                                                                                                                                                                             | **Default**     |
-|----------------------|-----------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
-| --collection_alias   | -c        | TEXT     | The alias of the collection to crawl. <br/> See the guide [here](https://github.com/scholarsportal/dataverse-metadata-crawler/wiki/Guide:-How-to-find-the-COLLECTION_ALIAS-of-a-Dataverse-collection) to learn how to find the collection alias. <br/> **[required]**                                                       | None            |
-| --version            | -v        | TEXT     | The dataset version to crawl. Options include: <br/> • `draft` - The draft version, if any <br/> • `latest` - Either a draft (if exists) or the latest published version <br/> • `latest-published` - The latest published version <br/> • `x.y` - A specific version (e.g. `1.0`) <br/> • `x` - Same as `x.0` <br/> **[required]** | None (required) |
-
-**Optional options:**
-
-| **Option**              | **Short** | **Type** | **Description**                                                                                                                                                                                                 | **Default** |
-|-------------------------|-----------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| --auth                  | -a        | TEXT     | Authentication token to access the Dataverse repository. Can also be set via the `API_TOKEN` environment variable.                                                                                                | None        |
-| --report / --no-report  | -r        |          | Output summary report file of the crawl.                                                                                                                                                                        | `--report`  |                                                                                                                                      | False       |
-| --spreadsheet           | -s        |          | Output a CSV file of the metadata of datasets.<br>See the [spreadsheet column explanation notes](https://github.com/scholarsportal/dataverse-metadata-crawler/wiki/Explanation-of--Spreadsheet-Column-Headers). | False       |
-| --metadata-source       | -m        | TEXT     | Filter results by metadata source. Useful for filtering harvested datasets.                                                                                                                                     | None        |
-| --publication-status    | -ps       | TEXT     | Filter datasets by publication status (e.g. `Published`, `Draft`, `Unpublished`, `Deaccessioned`). Available values depend on the Dataverse installation.                                                       | None        |
-| --semaphore-limit       | -sl       | INT      | Maximum number of concurrent tasks when crawling datasets. Adjust based on expected load on the Dataverse repository.                                                                                           | 5           |
-| --log-level             |           | TEXT     | Logging level for console and file output. Options: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.                                                                                                            | `INFO`      |
-| --debug-log             | -debug    |          | Enable debug logging to a file in the `logs` directory.                                                                                                                                                         | False       |
-| --help                  |           |          | Show the help message.                                                                                                                                                                                          |             |
+See the [usage.md](docs/usage.md) file for detailed usage instructions, including available commands and options.
 
 ### Examples
+
 ```sh
 # Run all steps: crawl metadata and permissions for the latest version of collection 'demo'
 dvmeta -c demo -v latest run-all

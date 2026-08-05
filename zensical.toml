@@ -9,7 +9,8 @@ copyright = "&copy; 2026 Ken Lui"
 watch = ["src"]
 nav = [
   { Home = "index.md" },
-  { Reference = "reference.md" },
+  { Usage = "usage.md" },
+  # { Reference = "REFERENCE.md" },
 ]
 
 [[project.theme.palette]]
