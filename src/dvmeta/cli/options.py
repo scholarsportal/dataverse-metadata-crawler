@@ -6,7 +6,7 @@ from dvmeta.cli.validation import validate_version_type
 from dvmeta.models.log_level import LogLevel
 from dvmeta.models.publication_status import PublicationStatus
 
-# ruff:file-ignore[boolean-positional-value-in-call]
+# ruff: file-ignore[boolean-positional-value-in-call]
 
 
 class TyperOptions:

@@ -1,7 +1,5 @@
 """Module to export metadata dictionaries to JSON files."""
 
-from pathlib import Path
-
 import orjson
 from loguru import logger
 

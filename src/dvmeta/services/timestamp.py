@@ -1,6 +1,6 @@
 """Timestamp service for the crawling process."""
 
-# ruff: noqa: DTZ005
+# ruff:file-ignore[call-datetime-now-without-tzinfo]
 from dataclasses import dataclass
 from datetime import datetime
 
