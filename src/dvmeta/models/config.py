@@ -14,8 +14,8 @@ class Config(BaseSettings):
     api_token: str | None = Field(
         None,
         validation_alias=AliasChoices(
-            "API_TOKEN",
-            "API_KEY",  # Keep for backward compatibility.
+            "api_token",
+            "api_key",  # Keep for backward compatibility.
         ),
     )
     base_url: str = Field("https://borealisdata.ca/")
@@ -25,6 +25,4 @@ class Config(BaseSettings):
     collection_name: str | None = None
     metadata_source: str | None = None
     semaphore_limit: int = 5
-    log_level: LogLevel = Field(
-        LogLevel.INFO, validation_alias=AliasChoices("log_level", "LOG_LEVEL")
-    )
+    log_level: LogLevel = Field(LogLevel.INFO, validation_alias=AliasChoices("log_level"))
