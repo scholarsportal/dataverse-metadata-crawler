@@ -178,7 +178,6 @@ def crawl_metadata(ctx: typer.Context) -> None:
     with spinner():
         crawler = state.crawler
         dataset_ids = state.dataset_ids
-        logger.debug(f"state version: {state.config.version}")
         state.crawl_result.meta_dict = asyncio.run(
             crawler.get_dataset_metadata(dataset_ids, version=state.config.version)
         )

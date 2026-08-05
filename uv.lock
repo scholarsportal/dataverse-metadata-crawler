@@ -385,7 +385,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "asyncio", specifier = ">=3.4.3" },
-    { name = "dv-schema-models", specifier = "==0.10.0" },
+    { name = "dv-schema-models", specifier = "==0.11.1" },
     { name = "httpx2", specifier = ">=2.0.0" },
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "ipywidgets", specifier = ">=8.1.5" },
@@ -480,15 +480,15 @@ wheels = [
 
 [[package]]
 name = "dv-schema-models"
-version = "0.10.0"
+version = "0.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/39/8e/437687aafbdbacc8eccbf59aa2c55e6b8d4757c9b36d5fc45876bd331f67/dv_schema_models-0.10.0.tar.gz", hash = "sha256:0752ebc15aa97ac8e7a4c0590b1aa0e76d2101ea2f30c69d6219722ef334a7fd", size = 13014, upload-time = "2026-07-22T21:54:08.384Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/79/62807169eac74ed90cd53dada0af728a930d433bb35311f3651146775cc8/dv_schema_models-0.11.1.tar.gz", hash = "sha256:2bd8ced1b73cf197c27891818b659d070115d80732690258e8c0c0dbb6451dd6", size = 13680, upload-time = "2026-08-05T21:44:21.921Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/36/3a05a83f6fe09526c07998d4d8cc280e6972e0ac7340d0411b16ec0dab08/dv_schema_models-0.10.0-py3-none-any.whl", hash = "sha256:fb6b682f0e839d7268660ed601cbb31d799ec2d9646ccb2693e27581b5d59116", size = 15437, upload-time = "2026-07-22T21:54:07.496Z" },
+    { url = "https://files.pythonhosted.org/packages/97/e4/c993404ee224791b5d72dd20a416860021c83e7e9c632b97904d4b797344/dv_schema_models-0.11.1-py3-none-any.whl", hash = "sha256:6ee7398cc164ea05d674d1e4775f32cd8ee9ba560dc305d6518de49b46a062dc", size = 15730, upload-time = "2026-08-05T21:44:20.865Z" },
 ]
 
 [[package]]

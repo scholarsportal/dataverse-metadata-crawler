@@ -198,49 +198,50 @@ class Spreadsheet:
                     f"Error loading dataset {key}: {loaded_dataset}, skipping to write to CSV"
                 )
                 continue
-            if not loaded_dataset.data.latestVersion:
+            dataset_version = loaded_dataset.dataset_version
+            if not dataset_version:
                 logger.warning(
                     f"Dataset {loaded_dataset.data.id} has no content metadata (likely deaccessioned), skipping to write to CSV"
                 )
                 continue
-            citation_block = loaded_dataset.data.latestVersion.metadataBlocks.get("citation")
+            citation_block = dataset_version.metadataBlocks.get("citation")
             if citation_block is None:
                 logger.warning(
-                    f"Dataset {loaded_dataset.data.id} has no citation block, skipping to write to CSV"
+                    f"Dataset {dataset_version.datasetId} has no citation block, skipping to write to CSV"
                 )
                 continue
             subject_list: list = citation_block.get_value("subject") or []
-            files_list = loaded_dataset.data.latestVersion.files or []
+            files_list = dataset_version.files or []
 
             row: DatasetExportRow = {
                 "DatasetTitle": citation_block.get_value("title") or "",
                 "DatasetURL": (
                     urljoin(
                         self.config.base_url,
-                        f"/dataset.xhtml?persistentId={loaded_dataset.data.datasetVersion.datasetPersistentId}",
+                        f"/dataset.xhtml?persistentId={dataset_version.datasetPersistentId}",
                     )
-                    if loaded_dataset.data.datasetVersion.datasetPersistentId
+                    if dataset_version.datasetPersistentId
                     else ""
                 ),
                 "DS_Path": self.get_dataset_path(dataset_meta, citation_block.get_value("title")),
-                "ID": loaded_dataset.data.id,
-                "DatasetPersistentId": loaded_dataset.data.datasetVersion.datasetPersistentId,
-                "DatasetId": loaded_dataset.data.datasetVersion.datasetId,
-                "VersionState": loaded_dataset.data.datasetVersion.versionState,
-                "LastUpdateTime": loaded_dataset.data.datasetVersion.lastUpdateTime,
-                "ReleaseTime": loaded_dataset.data.datasetVersion.releaseTime,
-                "CreateTime": loaded_dataset.data.datasetVersion.createTime,
+                "ID": dataset_version.datasetId,
+                "DatasetPersistentId": dataset_version.datasetPersistentId,
+                "DatasetId": dataset_version.datasetId,
+                "VersionState": dataset_version.versionState,
+                "LastUpdateTime": dataset_version.lastUpdateTime,
+                "ReleaseTime": dataset_version.releaseTime,
+                "CreateTime": dataset_version.createTime,
                 "Version": str(self._get_dataset_version(dataset_meta)),
                 "FileCount": len(files_list),
                 "FileSize": FileInstance.sum_field(files_list, "filesize") or 0,
                 "FileSize_normalized": convert_size(get_data_files_size(dataset_meta)),
                 "License": license_info.get("name")
-                if (license_info := getattr(loaded_dataset.data.datasetVersion, "license", None))
+                if (license_info := getattr(dataset_version, "license", None))
                 else "",
                 "RestrictedFiles": FileInstance.list_field(files_list, "restricted").count(True),
-                "TermsOfUse": loaded_dataset.data.datasetVersion.termsOfUse or "",
-                "RequestAccess": loaded_dataset.data.datasetVersion.fileAccessRequest,
-                "TermsAccess": loaded_dataset.data.datasetVersion.termsOfAccess or "",
+                "TermsOfUse": dataset_version.termsOfUse or "",
+                "RequestAccess": dataset_version.fileAccessRequest,
+                "TermsAccess": dataset_version.termsOfAccess or "",
                 "DF_Hierarchy": FileInstance.list_field(files_list, "directoryLabel") is not None,
                 "DF_Tags": FileInstance.list_field(files_list, "dataFile.description") is not None,
                 "DF_Description": FileInstance.list_field(files_list, "dataFile.categories")
@@ -264,29 +265,17 @@ class Spreadsheet:
                 "CM_OriginSources": citation_block.get_value("originOfSources") or "",
                 "CM_CharSources": citation_block.get_value("characteristicOfSources") or "",
                 "CM_DocSources": citation_block.get_value("accessToSources") or "",
-                "Meta_Geo": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_GEO)
-                )
+                "Meta_Geo": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_GEO))
                 is not None,
-                "Meta_SSHM": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_SSHM)
-                )
+                "Meta_SSHM": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_SSHM))
                 is not None,
-                "Meta_Astro": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_ASTRO)
-                )
+                "Meta_Astro": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_ASTRO))
                 is not None,
-                "Meta_LS": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_LS)
-                )
+                "Meta_LS": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_LS))
                 is not None,
-                "Meta_Journal": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_JOURNAL)
-                )
+                "Meta_Journal": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_JOURNAL))
                 is not None,
-                "Meta_CWF": loaded_dataset.data.latestVersion.metadataBlocks.get(
-                    str(MetadataBlocks.META_CWF)
-                )
+                "Meta_CWF": dataset_version.metadataBlocks.get(str(MetadataBlocks.META_CWF))
                 is not None,
                 # Citation — compound fields (extract specific child values)
                 "CM_Agency": citation_block.get_subfield_values("otherId", "otherIdAgency"),
