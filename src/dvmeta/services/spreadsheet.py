@@ -234,7 +234,9 @@ class Spreadsheet:
                 "Version": str(self._get_dataset_version(dataset_meta)),
                 "FileCount": len(files_list),
                 "FileSize": FileInstance.sum_field(files_list, "filesize") or 0,
-                "FileSize_normalized": convert_size(get_data_files_size(dataset_meta)),
+                "FileSize_normalized": convert_size(
+                    FileInstance.sum_field(files_list, "filesize") or 0
+                ),
                 "License": license_info.get("name")
                 if (license_info := getattr(dataset_version, "license", None))
                 else "",
