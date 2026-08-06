@@ -391,7 +391,7 @@ class Spreadsheet:
 
         checksum = gen_checksum(csv_file_path)
         logger.info(
-            f"Exported Dataset Metadata CSV: {csv_file_path}\nChecksum (SHA-256): {checksum}"
+            f"Exported Dataset Metadata CSV: {csv_file_path}. Checksum (SHA-256): {checksum}"
         )
 
         return csv_file_path, checksum
