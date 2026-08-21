@@ -169,9 +169,11 @@ type = "simple"
   cmd = "python scripts/generate_cli_docs.py src/dvmeta/app.py -o docs/usage.md"
 
   [tool.poe.tasks.bump]
+  help = "Bump the version of this package"
   cmd = "cz bump --yes"
 
   [tool.poe.tasks.push]
+  help = "Push the changes to the remote repository with tags"
   cmd = "git push --follow-tags"
 
   [tool.poe.tasks.release]
