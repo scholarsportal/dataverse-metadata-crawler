@@ -2,9 +2,9 @@
 site_name = "dataverse-metadata-crawler"
 site_description = "A Python CLI tool for bulk extracting and exporting metadata from Dataverse repositories' collections to JSON and CSV formats."
 site_author = "Ken Lui"
-site_url = "https://kenlhlui.github.io/dataverse-metadata-crawler"
-repo_url = "https://github.com/kenlhlui/dataverse-metadata-crawler"
-repo_name = "kenlhlui/dataverse-metadata-crawler"
+site_url = "https://scholarsportal.github.io/dataverse-metadata-crawler"
+repo_url = "https://github.com/scholarsportal/dataverse-metadata-crawler"
+repo_name = "scholarsportal/dataverse-metadata-crawler"
 copyright = "&copy; 2026 Ken Lui"
 watch = ["src"]
 nav = [
