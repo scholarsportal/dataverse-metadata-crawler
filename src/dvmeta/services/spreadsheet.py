@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from urllib.parse import urljoin
 
-from dv_schema_models.dataset_instance import safe_load_dataset
+from dv_schema_models.dataset_instance import DatasetVersion, safe_load_dataset
 from dv_schema_models.file_instance import FileInstance
 from loguru import logger
 
@@ -13,7 +13,7 @@ from dvmeta.models.config import Config
 from dvmeta.models.csv_model import DatasetExportRow, DatasetSubjects, MetadataBlocks
 from dvmeta.services.dir_manager import RES_DIR, ExportDir, get_dir
 from dvmeta.services.timestamp import get_file_timestamp
-from dvmeta.services.utils import convert_size, gen_checksum, get_data_files_size
+from dvmeta.services.utils import convert_size, gen_checksum
 
 
 class Spreadsheet:
@@ -44,22 +44,22 @@ class Spreadsheet:
         return result
 
     @staticmethod
-    def _get_dataset_version(dataset_meta: dict) -> float | str:
+    def _get_dataset_version(dataset_version: DatasetVersion) -> str:
         """Get dataset version.
 
         Args:
-            dataset_meta: The dataset metadata.
+            dataset_version: The dataset version object.
 
         Returns:
-            float | str: The dataset version as a float or "DRAFT" if the version state is draft.
+            str: The dataset version as a string or "DRAFT" if the version state is draft.
         """
-        dataset_version = dataset_meta.get("datasetVersion", {})
-        if dataset_version.get("versionState") == "DRAFT":
+        if dataset_version.versionState == "DRAFT":
             return "DRAFT"
-        version_number = dataset_version.get("versionNumber")
-        version_minor_number = dataset_version.get("versionMinorNumber")
-        if version_number is not None and version_minor_number is not None:
-            return float(f"{version_number}.{version_minor_number}")
+        if (
+            dataset_version.versionNumber is not None
+            and dataset_version.versionMinorNumber is not None
+        ):
+            return str(f"{dataset_version.versionNumber}.{dataset_version.versionMinorNumber}")
         return "Error"
 
     @staticmethod
@@ -231,7 +231,7 @@ class Spreadsheet:
                 "LastUpdateTime": dataset_version.lastUpdateTime,
                 "ReleaseTime": dataset_version.releaseTime,
                 "CreateTime": dataset_version.createTime,
-                "Version": str(self._get_dataset_version(dataset_meta)),
+                "Version": self._get_dataset_version(dataset_version),
                 "FileCount": len(files_list),
                 "FileSize": FileInstance.sum_field(files_list, "filesize") or 0,
                 "FileSize_normalized": convert_size(
