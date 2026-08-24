@@ -85,20 +85,14 @@ command_line = "--module pytest"
 data_file = "reports/.coverage"
 source = ["src"]
 
-[tool.coverage.xml]  # https://coverage.readthedocs.io/en/latest/config.html#xml
-output = "reports/coverage.xml"
+[tool.hatch.build.targets.wheel]
+packages = ["dvmeta"]
 
-[tool.pytest.ini_options]  # https://docs.pytest.org/en/latest/reference/reference.html#ini-options-ref
-addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
-testpaths = ["src", "tests"]
-xfail_strict = true
-
-[tool.ruff]  # https://docs.astral.sh/ruff/settings/
-fix = true
-line-length = 100
-src = ["src", "tests"]
-target-version = "py310"
-extend-exclude = ["*.ipynb"]
+[tool.ruff]
+# General settings
+line-length = 120
+indent-width = 4
+ignore = ["T201"]  # Ignore print statements globally
 
 [tool.ruff.format]
 docstring-code-format = true

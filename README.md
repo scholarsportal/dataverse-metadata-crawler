@@ -241,6 +241,7 @@ poe test
 
 1. Dependencies management: [uv](https://docs.astral.sh/uv/) - Use `uv` to manage dependencies and reflect changes in the `pyproject.toml` file.
 2. Linter: [ruff](https://docs.astral.sh/ruff/) - Follow the linting rules outlined in the `pyproject.toml` file.
+3. [Commitlint](https://commitlint.js.org/): default [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0) rules is used. Commits that do not follow the rules will be rejected during the pull request.
 
 ### Bump version
 
