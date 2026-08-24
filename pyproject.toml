@@ -7,7 +7,7 @@ module-name = "dvmeta"
 
 [project]  # https://packaging.python.org/en/latest/specifications/pyproject-toml/
 name = "dataverse-metadata-crawler"
-version = "0.1.6"
+version = "0.2.0"
 description = "A Python CLI tool for bulk extracting and exporting metadata from Dataverse repositories' collections to JSON and CSV formats."
 readme = "README.md"
 authors = [
