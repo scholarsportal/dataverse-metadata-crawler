@@ -5,8 +5,6 @@
 
 # Dataverse Metadata Crawler
 
-![Screencapture of the CLI tool](res/demo.gif)
-
 ## 📜Description
 
 A Python CLI tool for extracting and exporting metadata from [Dataverse](https://dataverse.org/) repositories. It supports bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
