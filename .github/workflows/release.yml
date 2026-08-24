@@ -1,0 +1,48 @@
+# Customized GitHub Actions workflow for bumping version and creating a release using commitizen.
+# Modified from https://github.com/commitizen-tools/setup-cz/blob/main/examples/bump-release.yaml
+# Initialize the repositroy with 'cz init' first. Then install the Prek and Pre-commit Integration. Lastly add the workflow.
+
+on:
+  push:
+    branches:
+      - main
+
+name: Release
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    if: "startsWith(github.event.head_commit.message, 'bump:')"
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.3.2
+      
+      - name: Install Commitizen with uv tools
+        run: |
+          uv tool install commitizen
+      
+      - name: Get the new version
+        id: get-version
+        run: |
+          echo "new_version=$(cz version -p)" >> $GITHUB_OUTPUT
+          echo "new_version_tag=$(cz version -p --tag)" >> $GITHUB_OUTPUT
+      - name: Build changelog for Release
+        env:
+          NEW_VERSION: ${{ steps.get-version.outputs.new_version }}
+        # The following command might not be the best way to get the latest changelog.
+        run: |
+          awk '/^## /{c++} c==1' CHANGELOG.md > .changelog.md
+      - name: GitHub Release
+        if: ${{ steps.get-version.outputs.new_version != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_VERSION_TAG: ${{ steps.get-version.outputs.new_version_tag }}
+        run: |
+          gh release create "${NEW_VERSION_TAG}" --notes-file .changelog.md

@@ -1,0 +1,19 @@
+_commit: v2.5.0
+_src_path: gh:kenlhlui/substrate
+data_project_dirs: false
+docs_with_reference: true
+license: MIT
+project_description: A Python CLI tool for bulk extracting and exporting metadata
+    from Dataverse repositories' collections to JSON and CSV formats.
+project_name: dataverse-metadata-crawler
+project_type: package
+project_url: https://github.com/kenlhlui/dataverse-metadata-crawler
+pydocstyle: google
+python_version: '3.11'
+typing: optional
+version_scheme: pep440
+with_conventional_commits: true
+with_httpx2: true
+with_pydantic: true
+with_pypi_publish: false
+with_typer_cli: true
