@@ -113,7 +113,7 @@ See the [usage.md](docs/usage.md) file for detailed usage instructions, includin
 
 ```sh
 # Run all steps: crawl metadata and permissions for the latest version of collection 'demo'
-dvmeta -c demo -ps  latest run-all
+dvmeta -c demo run-all
 
 # Run all steps with spreadsheet output and an API token
 dvmeta -c demo -v latest -p -s -a xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx run-all
